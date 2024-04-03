@@ -1,0 +1,60 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+## Clear workspace, install library & import data
+```{r}
+library("caret")
+set.seed(1234)
+
+rm(list = ls())
+
+data.trn <- read.csv("wineq_train.csv", stringsAsFactors=F)
+```
+
+## Calculate RMSE for different values of k
+```{r}
+ctrl <- trainControl(method="cv", number=10) #10 fold cross validation
+
+K <- seq(5, 70, by=5)
+
+model <- train(quality ~ .,
+               method = "knn",
+               trControl = ctrl,
+               preProcess = c("center","scale"),
+               tuneGrid = data.frame(k=K),
+               data = data.trn)
+
+#print(model)
+#plot(model)
+
+train_rmse <- rep(NA, length(K))
+i <- 0
+for (k in model$results$k){
+  modelCV <- train(quality ~ .,
+                 method = "knn",
+                 trControl = ctrl,
+                 preProcess = c("center","scale"),
+                 tuneGrid = data.frame(k=k),
+                 data = data.trn)
+  predictions_train <- predict(modelCV, newdata = data.trn)
+  train_rmse[i] <- sqrt(mean((data.trn$quality - predictions_train)^2))
+  i <- i + 1
+}
+```
+
+## Plot RMSE vs 1/k
+
+```{r}
+plot(1/model$results$k, model$results$RMSE, type = "l", xlab = "1/k", ylab = "RMSE", main = "RMSE vs 1/k", col="red", ylim=c(0.63,0.73))
+points(1/K, train_rmse, type = "l", pch = 16, col = "blue")
+
+best_k = model$bestTune$k
+index = which.min(model$results$RMSE)
+points(1/best_k, model$results$RMSE[index], pch = "o", col = "black")
+legend("right", legend = c("Training RMSE", "CV RMSE", paste("Best result k=", best_k)), col = c("blue", "red", "black"), pch = 16)
+```

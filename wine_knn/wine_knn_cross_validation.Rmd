@@ -9,6 +9,7 @@ output:
 ## Clear workspace, install library & import data
 ```{r}
 library("caret")
+library("Metrics")
 set.seed(1234)
 
 rm(list = ls())

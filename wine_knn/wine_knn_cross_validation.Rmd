@@ -41,7 +41,7 @@ data.trn <- read.csv("wineq_train.csv", stringsAsFactors=F)
 
 The dataset consists of train set with 3698 obs. of 12 variables as below:
 
-Input variables (based on physicochemical tests):
+**Input variables** (based on physicochemical tests):
 
 1.  fixed acidity
 2.  volatile acidity
@@ -55,7 +55,7 @@ Input variables (based on physicochemical tests):
 10. sulphates
 11. alcohol
 
-Output variable (based on sensory data):
+**Output variable** (based on sensory data):
 
 12. quality (score between 0 and 10)
 
@@ -63,9 +63,12 @@ Output variable (based on sensory data):
 str(data.trn)
 ```
 
+## Results
+We begin by importing the wine quality dataset and setting up a 10-fold cross-validation using the `caret` package.
+The KNN algorithm is used for modeling, with the dataset preprocessed by centering and scaling to ensure standardized features.
 
-## Methodology
-We begin by importing the wine quality dataset and setting up a 10-fold cross-validation framework using the caret package in R. The KNN algorithm is employed for modeling, with the dataset preprocessed by centering and scaling to ensure standardized features. To identify the optimal value of k, we conduct a grid search over a range of k values, ranging from 10 to 70 with increments of 5. For each k, we perform cross-validation and calculate the root mean squared error (RMSE) as a measure of model performance.
+To identify the optimal value of k, we conduct a grid search over a range of k values, ranging from 5 to 70 with increments of 5.
+For each k, we perform cross-validation and calculate the root mean squared error (RMSE) as a measure of model performance.
 
 We add centering and scaling preprocessing to the model. Centering involves subtracting the mean of each predictor variable from all of its values. Scaling involves dividing each predictor variable by its standard deviation. Since KNN is a distance-based model, centering and scaling ensure that all variables contribute equally to the model calculation.
 
@@ -101,8 +104,22 @@ for (k in K){
 }
 ```
 
-## Experiments
-The experiments involve iteratively training KNN models with different values of k and evaluating their performance through cross-validation. We plot the relationship between 1/k (where k is the number of neighbors) and the RMSE to visualize how model complexity impacts prediction accuracy. Additionally, we compare the training RMSE with the cross-validation RMSE to assess overfitting. A particular focus is given to identifying the best performing k value, where the model exhibits optimal balance between bias and variance. Notably, we pinpoint the k value that yields the lowest cross-validation RMSE as the most suitable parameter for our KNN model.
+The experiments involve iteratively training KNN models with different values of k and evaluating their performance through cross-validation.
+
+We plot the relationship between 1/k (where k is the number of neighbors) and the cross-validation RMSE and training RMSE to visualize how model complexity impacts prediction accuracy.
+Additionally, we compare the training RMSE with the cross-validation RMSE to assess overfitting.
+Finally, we highlighted in the graph the best k in the RMSE cross-validation results.
+
+```{r echo=FALSE}
+## Plot RMSE vs 1/k
+plot(1/model$results$k, model$results$RMSE, type = "l", xlab = "1/k", ylab = "RMSE", main = "RMSE vs 1/k", col="red", ylim=c(0.71,0.73))
+
+best_k = model$bestTune$k
+index = which.min(model$results$RMSE)
+points(1/best_k, model$results$RMSE[index], pch = "o", col = "black")
+legend("topright", legend = c("CV RMSE", paste("Best result k=", best_k)), col = c("red", "black"), pch = 16)
+```
+
 
 ```{r}
 ## Plot RMSE vs 1/k
@@ -116,4 +133,7 @@ legend("right", legend = c("Training RMSE", "CV RMSE", paste("Best result k=", b
 ```
 
 ## Conclusion
-In conclusion, our experimentation demonstrates the effectiveness of KNN coupled with cross-validation in predicting wine quality. We find that the model's performance varies with the choice of k, highlighting the importance of hyperparameter tuning. Through systematic evaluation and visualization, we identify the optimal k value of 10, achieving the best cross-validated RMSE. This suggests that considering a moderate number of nearest neighbors leads to a well-generalized model for predicting wine quality. Overall, our study underscores the significance of cross-validation in model selection and parameter tuning, providing valuable insights for building robust predictive models in similar domains.
+In conclusion, our experimentation demonstrates the effectiveness of KNN coupled with cross-validation in predicting wine quality.
+We find that the model's performance varies with the choice of k, highlighting the importance of hyperparameter tuning. Through systematic evaluation and visualization, we identify the optimal k value of 10, achieving the best cross-validated RMSE.
+This suggests that considering a moderate number of nearest neighbors leads to a well-generalized model for predicting wine quality.
+Overall, our study underscores the significance of cross-validation in model selection and parameter tuning, providing valuable insights for building robust predictive models in similar domains.

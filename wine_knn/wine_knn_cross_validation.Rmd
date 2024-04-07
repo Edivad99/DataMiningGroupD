@@ -65,6 +65,7 @@ For each k, we perform cross-validation and calculate the root mean squared erro
 
 We add centering and scaling preprocessing to the model. Centering involves subtracting the mean of each predictor variable from all of its values. Scaling involves dividing each predictor variable by its standard deviation. Since KNN is a distance-based model, centering and scaling ensure that all variables contribute equally to the model calculation.
 
+The KNN model is trained for each number of K from 5 to 70 (with a step size of 5). The train function executes a grid search to assests the best K on the provided range.
 
 ```{r}
 ## Calculate RMSE for different values of k
@@ -89,7 +90,6 @@ for (k in K){
                  method = "knn",
                  trControl = ctrl,
                  preProcess = c("center","scale"),
-                 tuneGrid = data.frame(k=k),
                  data = data.trn)
   predictions_train <- predict(modelCV, newdata = data.trn)
   train_rmse[i] <- rmse(data.trn$quality, predictions_train)

@@ -52,7 +52,7 @@ The dataset consists of train set with 3698 obs. of 12 variables as below:
 
 12. quality (score between 0 and 10)
 
-```{r}
+```{r echo=FALSE}
 str(data.trn)
 ```
 
@@ -75,26 +75,26 @@ ctrl <- trainControl(method="cv", number=10) #10 fold cross validation
 
 K <- seq(5, 70, by=5)
 
-model <- train(quality ~ .,
-               method = "knn",
-               trControl = ctrl,
-               preProcess = c("center","scale"),
-               tuneGrid = data.frame(k=K),
-               data = data.trn)
-
-#print(model)
-#plot(model)
+cv_rmse <- rep(NA, length(K))
+best_k <- 0
+best_k_index <- 1
 
 train_rmse <- rep(NA, length(K))
 i <- 1
 for (k in K){
-  modelCV <- train(quality ~ .,
+  model <- train(quality ~ .,
                  method = "knn",
                  trControl = ctrl,
                  preProcess = c("center","scale"),
                  tuneGrid = data.frame(k=k),
                  data = data.trn)
-  predictions_train <- predict(modelCV, newdata = data.trn)
+
+  if (i==1 || cv_rmse[best_k_index] > model$results$RMSE){
+    best_k <- k
+    best_k_index <- i
+  }
+  cv_rmse[i] <- model$results$RMSE
+  predictions_train <- predict(model, newdata = data.trn)
   train_rmse[i] <- rmse(data.trn$quality, predictions_train)
   i <- i + 1
 }
@@ -108,23 +108,21 @@ Finally, we highlighted in the graph the best k in the RMSE cross-validation res
 
 ```{r echo=FALSE}
 ## Plot RMSE vs 1/k
-plot(1/model$results$k, model$results$RMSE, type = "l", xlab = "1/k", ylab = "RMSE", main = "RMSE vs 1/k", col="red", ylim=c(0.71,0.73))
+plot(1/K, cv_rmse, type = "l", xlab = "1/k", ylab = "RMSE", main = "RMSE vs 1/k", col="red", ylim=c(0.71,0.73))
 
-best_k = model$bestTune$k
-index = which.min(model$results$RMSE)
-points(1/best_k, model$results$RMSE[index], pch = "o", col = "black")
+index = best_k_index
+points(1/best_k, cv_rmse[index], pch = "o", col = "black")
 legend("topright", legend = c("CV RMSE", paste("Best result k=", best_k)), col = c("red", "black"), pch = 16)
 ```
 
 
 ```{r}
 ## Plot RMSE vs 1/k
-plot(1/model$results$k, model$results$RMSE, type = "l", xlab = "1/k", ylab = "RMSE", main = "RMSE vs 1/k", col="red", ylim=c(0.56,0.73))
+plot(1/K, cv_rmse, type = "l", xlab = "1/k", ylab = "RMSE", main = "RMSE vs 1/k", col="red", ylim=c(0.56,0.73))
 points(1/K, train_rmse, type = "l", pch = 16, col = "blue")
 
-best_k = model$bestTune$k
-index = which.min(model$results$RMSE)
-points(1/best_k, model$results$RMSE[index], pch = "o", col = "black")
+index = best_k_index
+points(1/best_k, cv_rmse[index], pch = "o", col = "black")
 legend("right", legend = c("Training RMSE", "CV RMSE", paste("Best result k=", best_k)), col = c("blue", "red", "black"), pch = 16)
 ```
 

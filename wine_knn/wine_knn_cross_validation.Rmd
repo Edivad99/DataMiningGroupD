@@ -17,14 +17,7 @@ output:
 
 ## Abstract
 
-This report explores the application of the k-nearest neighbors (KNN)
-algorithm in predicting wine quality, using cross-validation as a robust
-evaluation technique. The dataset used comprises various attributes of
-wine samples along with their quality ratings. Our aim is to find an
-optimal value of k, the number of neighbors considered in KNN, to
-minimize prediction errors. Through cross-validation, we evaluate the
-model's performance across different values of k, shedding light on its
-robustness and generalization ability.
+In this report we summarize our attempt of implementing the k-nearest neighbors (KNN) model to the Wine Quality dataset, using cross-validation. Our aim is to use cross validation to find an optimal value of k, the number of neighbors considered in KNN, to minimize prediction errors. In the end, we plot RMSE based on train data and cross-validation as a function of 1/K (K of KNN) to highlight the best K value and how the RMSE relates to the selected K.
 
 ## Dataset
 

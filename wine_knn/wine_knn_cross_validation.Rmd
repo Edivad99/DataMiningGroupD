@@ -90,6 +90,7 @@ for (k in K){
                  method = "knn",
                  trControl = ctrl,
                  preProcess = c("center","scale"),
+                 tuneGrid = data.frame(k=k),
                  data = data.trn)
   predictions_train <- predict(modelCV, newdata = data.trn)
   train_rmse[i] <- rmse(data.trn$quality, predictions_train)

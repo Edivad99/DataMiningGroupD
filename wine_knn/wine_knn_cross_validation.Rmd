@@ -67,6 +67,9 @@ str(data.trn)
 ## Methodology
 We begin by importing the wine quality dataset and setting up a 10-fold cross-validation framework using the caret package in R. The KNN algorithm is employed for modeling, with the dataset preprocessed by centering and scaling to ensure standardized features. To identify the optimal value of k, we conduct a grid search over a range of k values, ranging from 10 to 70 with increments of 5. For each k, we perform cross-validation and calculate the root mean squared error (RMSE) as a measure of model performance.
 
+We add centering and scaling preprocessing to the model. Centering involves subtracting the mean of each predictor variable from all of its values. Scaling involves dividing each predictor variable by its standard deviation. Since KNN is a distance-based model, centering and scaling ensure that all variables contribute equally to the model calculation.
+
+
 ```{r}
 ## Calculate RMSE for different values of k
 ctrl <- trainControl(method="cv", number=10) #10 fold cross validation

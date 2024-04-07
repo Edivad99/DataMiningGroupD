@@ -6,12 +6,12 @@ output:
   pdf_document: default
 ---
 
--   **Davide Albiero**
--   **Nazanin Ghorbani**
--   **Raman Yudzeshka**
--   **Niccolò Zenaro**
--   **Luca Marchiori**
--   **Mohammad Khosravi**
+-   **Davide Albiero** davide.albiero@studenti.unipd.it
+-   **Nazanin Ghorbani** nazanin.ghorbani@studenti.unipd.it
+-   **Raman Yudzeshka** raman.yudzeshka@studenti.unipd.it
+-   **Niccolò Zenaro** niccolo.zenaro@studenti.unipd.it
+-   **Luca Marchiori** luca.marchiori.3@studenti.unipd.it
+-   **Mohammad Khosravi** mohammad.khosravi.1@studenti.unipd.it
 
 ## Abstract
 
@@ -37,8 +37,7 @@ rm(list = ls())
 data.trn <- read.csv("wineq_train.csv", stringsAsFactors=F)
 ```
 
-The dataset consists of train set with 3698 obs. of 12 variables and
-test set with 1200 obs. of 11 variables as below:
+The dataset consists of train set with 3698 obs. of 12 variables as below:
 
 Input variables (based on physicochemical tests):
 

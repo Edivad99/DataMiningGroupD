@@ -88,7 +88,7 @@ model <- train(quality ~ .,
 
 train_rmse <- rep(NA, length(K))
 i <- 1
-for (k in model$results$k){
+for (k in K){
   modelCV <- train(quality ~ .,
                  method = "knn",
                  trControl = ctrl,

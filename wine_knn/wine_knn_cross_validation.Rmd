@@ -60,6 +60,8 @@ str(data.trn)
 We begin by importing the wine quality dataset and setting up a 10-fold cross-validation using the `caret` package.
 The KNN algorithm is used for modeling, with the dataset preprocessed by centering and scaling to ensure standardized features.
 
+Since there is a bias-variance trade-off associated with the choice of k in k-fold cross-validation, we have chosen k=10. This is because using k = 5 or k = 10 has been shown empirically to yield test error rate estimates that suffer neither from excessively high bias nor from very high variance.
+
 To identify the optimal value of k, we conduct a grid search over a range of k values, ranging from 5 to 70 with increments of 5.
 For each k, we perform cross-validation and calculate the root mean squared error (RMSE) as a measure of model performance.
 

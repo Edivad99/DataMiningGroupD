@@ -19,6 +19,7 @@ train$sex <- as.factor(train$sex)
 train$payment.method <- as.factor(train$payment.method)
 train$activation.zone <- as.factor(train$activation.zone)
 train$activation.channel <- as.factor(ifelse(train$activation.channel==5, 1, 0)) #Merge 
+train$tariff.plan <- as.factor(ifelse(train$tariff.plan <= 6, 1, train$tariff.plan)) #Merge 
 train$vas1 <- as.factor(train$vas1)
 train$vas2 <- as.factor(train$vas2)
 

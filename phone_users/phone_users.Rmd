@@ -14,6 +14,23 @@ set.seed(1234)
 rm(list = ls())
 train <- read.csv("phone_train.csv", header=TRUE)
 test <- read.csv("phone_validation.csv", header=TRUE)
+
+train$sex <- as.factor(train$sex)
+train$payment.method <- as.factor(train$payment.method)
+train$activation.zone <- as.factor(train$activation.zone)
+train$activation.channel <- as.factor(train$activation.channel)
+train$vas1 <- as.factor(train$vas1)
+train$vas2 <- as.factor(train$vas2)
+
+plot(train$sex)
+plot(train$payment.method)
+plot(train$activation.zone)
+summary(train$activation.zone)
+
+plot(train$activation.channel)
+
+summary(train)
+
 ```
 
 

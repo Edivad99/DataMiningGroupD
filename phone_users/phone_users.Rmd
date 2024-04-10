@@ -5,13 +5,21 @@ date: "2024-04-10"
 output: html_document
 ---
 
+```{r include=FALSE}
+# Clear workspace, install library & import data
+library("caret")
+library("Metrics")
+set.seed(1234)
+
+rm(list = ls())
+train <- read.csv("phone_train.csv", header=TRUE)
+test <- read.csv("phone_validation.csv", header=TRUE)
+```
 
 
 ```{r}
-train <- read.csv("phone_train.csv", header=TRUE)
-test <- read.csv("phone_validation.csv", header=TRUE)
-fit <- lm( log(y+1) ~ . , data=train)
-yhat <- exp( predict(fit, newdata=test) )-1
+fit <- lm(log(y+1) ~ . , data=train)
+yhat <- exp(predict(fit, newdata=test) )-1
 yhat=pmax(0,yhat)
 summary(yhat)
 write.table(file="mySubmission.txt", yhat,row.names = FALSE,col.names = FALSE)

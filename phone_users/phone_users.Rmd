@@ -41,3 +41,25 @@ yhat=pmax(0,yhat)
 summary(yhat)
 write.table(file="mySubmission.txt", yhat,row.names = FALSE,col.names = FALSE)
 ```
+
+
+##To binary
+```{r}
+library(dplyr)
+
+to_binary_column_names = c("tariff.plan", "payment.method", "sex", "activation.zone", "activation.channel", "vas1", "vas2")
+
+for (to_binary_colname in to_binary_column_names){
+  new.column <- sapply(levels(factor(train[[to_binary_colname]])), function(level) {
+    col_name <- paste(to_binary_colname, level, sep = "")
+    (train[[to_binary_colname]] == level) * 1
+  })
+  colnames(new.column) <- paste(to_binary_colname, levels(factor(train[[to_binary_colname]])), sep = "")
+  
+  
+  train <- cbind(train, new.column)
+  
+  train <- select(train, -to_binary_colname)
+}
+train
+```

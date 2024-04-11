@@ -31,7 +31,28 @@ summary(train$activation.zone)
 plot(train$activation.channel)
 
 summary(train)
+```
 
+```{r}
+plotdata <- function (column, title, ylim){
+  plot(1, mean(train[,paste("q01", column, sep = "")]), pch=16, col=1, xlab = "Month", ylab = "Value", main = title, xlim = c(1, 9), ylim = ylim)
+  for (i in 2:9) {
+    points(i, mean(train[, paste("q0", i, column, sep="")]), pch=16, col=i)
+  }
+}
+```
+
+```{r}
+plotdata(".out.ch.peak", "mean total monthly number of outgoing calls\nat times when the tariff is highest", c(50, 110))
+plotdata(".out.dur.peak", "mean total monthly duration of outgoing calls\nat times when the tariff is highest", c(5000, 13000))
+plotdata(".out.val.peak", "mean total monthly value of outgoing calls\nat times when the tariff is highest", c(25, 60))
+plotdata(".out.ch.offpeak", "mean total monthly number of outgoing calls during off-peak hours", c(0, 10))
+plotdata(".out.dur.offpeak", "mean total monthly duration of outgoing calls during off-peak hours", c(300, 900))
+plotdata(".out.val.offpeak", "mean total monthly value of outgoing calls during off-peak hours", c(0, 4))
+plotdata(".in.ch.tot", "mean total monthly number of incoming calls", c(50, 100))
+plotdata(".in.dur.tot", "mean total monthly duration of incoming calls", c(4000, 9000))
+plotdata(".ch.sms", "mean total monthly number of SMS sent", c(0, 5))
+plotdata(".ch.cc", "mean total monthly number of calls to the Customer Service Centre", c(0, 1))
 ```
 
 

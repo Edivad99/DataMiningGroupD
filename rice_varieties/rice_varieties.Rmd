@@ -44,13 +44,11 @@ boxplot(train$Minor_Axis_Length ~ train$Class, xlab="Class", ylab = "MinorAxisLe
 boxplot(train$Eccentricity ~ train$Class, xlab="Class", ylab = "Eccentricity")
 boxplot(train$Convex_Area ~ train$Class, xlab="Class", ylab = "ConvexArea")
 boxplot(train$Extent ~ train$Class, xlab="Class", ylab = "EquivDiameter")
-
-plot(train[,])
 ```
 
 ### Scatterplots
 ```{r}
-plot(train$Area, train$Perimeter, type='p', col=ifelse(train$Class == 1, "darkred", "lightblue"), xlab = "Area", ylab = "Perimeter")
+plot(train[,], col=ifelse(train$Class == 1, "darkred", "lightblue"))
 plot(train$Convex_Area, train$Area, type='p', col=ifelse(train$Class == 1, "darkred", "lightblue"), xlab = "ConvexArea", ylab = "Area")
 ```
 

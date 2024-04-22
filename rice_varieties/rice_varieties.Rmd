@@ -1,7 +1,7 @@
 
 ## Importing Dataset (Task #1)
 ```{r}
-dataset <- read.csv("./dataset/Rice_Cammeo_Osmancik.csv")
+dataset <- read.csv("./dataset/rice_train.csv")
 head(dataset)
 summary(dataset)
 

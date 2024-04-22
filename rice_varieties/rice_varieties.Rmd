@@ -21,9 +21,12 @@ set.seed(1234)
 ```{r}
 rm(list = ls())
 df <- read.csv("./dataset/rice_train.csv")
-sample <- sample(c(TRUE, FALSE), nrow(df), replace=TRUE, prob=c(0.7,0.3))
-train <- df[sample, ]
-test <- df[!sample, ]
+trainIndex <- createDataPartition(df$Class, 
+								  times=1, 
+								  p = .8, 
+								  list = FALSE)
+train <- df[trainIndex, ]
+test <- df[-trainIndex, ]
 head(train)
 summary(train)
 
@@ -70,4 +73,38 @@ resLda
 ```{r}
 resLda <- qda(formula = Class ~ ., data = train)
 resLda
+```
+
+
+##KNN
+```{r}
+library(caret)
+library(class)
+
+#preproc
+
+preProcValues <- preProcess(train, method = c("center", "scale"))
+trainKNN <- predict(preProcValues, train)
+testKNN <- predict(preProcValues, test)
+
+knnModel <- train(
+		     Class ~ ., 
+		     data = trainKNN, 
+	            method = "knn", 
+		     trControl = trainControl(method = "cv"), 
+		     tuneGrid = data.frame(k = seq(1,81, by=5))
+		    )
+
+best_model<- knn3(
+                  Class ~ .,
+                  data = trainKNN,
+                  k = knnModel$bestTune$k
+                 )
+
+predictions <- predict(best_model, testKNN, type = "class")
+# Calculate confusion matrix
+cm <- confusionMatrix(predictions, testKNN$Class)
+cm
+
+
 ```

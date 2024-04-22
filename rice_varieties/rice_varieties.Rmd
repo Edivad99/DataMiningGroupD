@@ -43,8 +43,12 @@ plot(train[,])
 
 ## Performing LDA (Task #4)
 ```{r}
-#resLda <- lda(formula = default ~ scale(balance) + scale(income), data = dataset)
-
+resLda <- lda(formula = Class ~ ., data = train)
+resLda
 ```
 
-##
+## Performing QDA (Task #5)
+```{r}
+resLda <- qda(formula = Class ~ ., data = train)
+resLda
+```

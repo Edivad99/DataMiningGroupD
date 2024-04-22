@@ -22,6 +22,19 @@ summary(train)
 ```
 
 
+## Data exploration (Task #2)
+
+### Boxplots
+```{r}
+boxplot(train$Area ~ train$Class, xlab="Class", ylab = "Area")
+boxplot(train$Perimeter ~ train$Class, xlab="Class", ylab = "Perimeter")
+boxplot(train$Major_Axis_Length ~ train$Class, xlab="Class", ylab = "MajorAxisLength")
+boxplot(train$Minor_Axis_Length ~ train$Class, xlab="Class", ylab = "MinorAxisLength")
+boxplot(train$Eccentricity ~ train$Class, xlab="Class", ylab = "Eccentricity")
+boxplot(train$Convex_Area ~ train$Class, xlab="Class", ylab = "ConvexArea")
+boxplot(train$Extent ~ train$Class, xlab="Class", ylab = "EquivDiameter")
+```
+
 ## Performing LDA (Task #4)
 ```{r}
 #resLda <- lda(formula = default ~ scale(balance) + scale(income), data = dataset)

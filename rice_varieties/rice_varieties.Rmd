@@ -8,6 +8,7 @@ output: html_document
 
 ```{r include=FALSE}
 # Clear workspace, install library & import data
+library(corrplot)
 library("caret")
 library("Metrics")
 library(MASS)
@@ -48,6 +49,14 @@ plot(train[,])
 ```{r}
 plot(train$Area, train$Perimeter, type='p', col=ifelse(train$Class == 1, "darkred", "lightblue"), xlab = "Area", ylab = "Perimeter")
 plot(train$Convex_Area, train$Area, type='p', col=ifelse(train$Class == 1, "darkred", "lightblue"), xlab = "ConvexArea", ylab = "Area")
+```
+
+```{r}
+# Compute correlation matrix
+correlation_matrix <- cor(train)
+
+# Visualize correlation matrix
+corrplot(correlation_matrix, method = "color")
 ```
 
 

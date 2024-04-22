@@ -16,9 +16,13 @@ set.seed(1234)
 ## Importing Dataset (Task #1)
 ```{r}
 rm(list = ls())
-train <- read.csv("./dataset/rice_train.csv")
+df <- read.csv("./dataset/rice_train.csv")
+sample <- sample(c(TRUE, FALSE), nrow(df), replace=TRUE, prob=c(0.7,0.3))
+train <- df[sample, ]
+test <- df[!sample, ]
 head(train)
 summary(train)
+
 ```
 
 
@@ -42,3 +46,5 @@ plot(train[,])
 #resLda <- lda(formula = default ~ scale(balance) + scale(income), data = dataset)
 
 ```
+
+##

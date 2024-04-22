@@ -33,6 +33,8 @@ boxplot(train$Minor_Axis_Length ~ train$Class, xlab="Class", ylab = "MinorAxisLe
 boxplot(train$Eccentricity ~ train$Class, xlab="Class", ylab = "Eccentricity")
 boxplot(train$Convex_Area ~ train$Class, xlab="Class", ylab = "ConvexArea")
 boxplot(train$Extent ~ train$Class, xlab="Class", ylab = "EquivDiameter")
+
+plot(train[,])
 ```
 
 ## Performing LDA (Task #4)

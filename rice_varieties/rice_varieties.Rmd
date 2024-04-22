@@ -10,6 +10,9 @@ output: html_document
 # Clear workspace, install library & import data
 library("caret")
 library("Metrics")
+library(MASS)
+library(ggplot2)
+library(gridExtra)
 set.seed(1234)
 ```
 

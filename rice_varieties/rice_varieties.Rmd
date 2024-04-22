@@ -41,6 +41,13 @@ boxplot(train$Extent ~ train$Class, xlab="Class", ylab = "EquivDiameter")
 plot(train[,])
 ```
 
+### Scatterplots
+```{r}
+plot(train$Area, train$Perimeter, type='p', col=ifelse(train$Class == 1, "darkred", "lightblue"), xlab = "Area", ylab = "Perimeter")
+plot(train$Convex_Area, train$Area, type='p', col=ifelse(train$Class == 1, "darkred", "lightblue"), xlab = "ConvexArea", ylab = "Area")
+```
+
+
 ## Performing LDA (Task #4)
 ```{r}
 resLda <- lda(formula = Class ~ ., data = train)

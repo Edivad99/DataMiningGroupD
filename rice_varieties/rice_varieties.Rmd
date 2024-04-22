@@ -1,0 +1,6 @@
+```{r}
+dataset <- read.csv("./dataset/Rice_Cammeo_Osmancik.csv")
+head(dataset)
+summary(dataset)
+
+```

@@ -1,6 +1,15 @@
+
+## Importing Dataset (Task #1)
 ```{r}
 dataset <- read.csv("./dataset/Rice_Cammeo_Osmancik.csv")
 head(dataset)
 summary(dataset)
+
+```
+
+
+## Performing LDA (Task #4)
+```{r}
+#resLda <- lda(formula = default ~ scale(balance) + scale(income), data = dataset)
 
 ```

@@ -66,6 +66,15 @@ corrplot(correlation_matrix, method = "color")
 resLda <- lda(formula = Class ~ ., data = train)
 resLda
 ```
+With two classes (0/1), LDA produces only one discriminant function, which is sufficient to separate between the two classes in a one-dimensional space. Hence, the proportion of trace (percentage separations archived by LD1) is 100%
+```{r}
+predLda <- predict(resLda)
+str(predLda)
+```
+A Stacked Histogram can be used to see the class separation. The separation between the two classes is clear but with some overlap.
+```{r}
+ldahist(data = predLda$x, g=train$Class)
+```
 
 ## Performing QDA (Task #5)
 ```{r}

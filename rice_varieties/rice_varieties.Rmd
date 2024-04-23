@@ -1,19 +1,18 @@
 ---
-title: "PhoneUsers"
+title: "Rice Varieties Classification"
 author: "Group D"
 date: "2024-04-22"
 output: html_document
 ---
-
 
 ```{r include=FALSE}
 # Clear workspace, install library & import data
 library("corrplot")
 library("caret")
 library("Metrics")
-library(MASS)
-library(ggplot2)
-library(gridExtra)
+library("MASS")
+library("ggplot2")
+library("gridExtra")
 set.seed(1234)
 ```
 

@@ -100,6 +100,21 @@ qdaModel <- qda(formula = Class ~ ., data = train)
 qdaModel
 ```
 
+```{r}
+predQda.train <- predict(qdaModel, newdata = train)
+predQda.test <- predict(qdaModel, newdata = test)
+
+# Determine how well the model fits
+confusionMatrix(predQda.train$class, train$Class)
+confusionMatrix(predQda.test$class, test$Class)
+```
+```{r}
+# Try with cross validation leave one out
+qdaModelCV <- lda(formula = Class ~ ., data = data, CV = TRUE)
+
+confusionMatrix(qdaModelCV$class, data$Class)
+```
+
 
 ##KNN
 ```{r}

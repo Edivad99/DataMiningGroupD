@@ -9,6 +9,7 @@ output: html_document
 # Clear workspace, install library & import data
 library("corrplot")
 library("caret")
+library("class")
 library("Metrics")
 library("MASS")
 library("ggplot2")
@@ -19,13 +20,15 @@ set.seed(1234)
 ## Importing Dataset (Task #1)
 ```{r}
 rm(list = ls())
-df <- read.csv("./dataset/rice_train.csv")
-trainIndex <- createDataPartition(df$Class, 
-								  times=1, 
-								  p = .8, 
-								  list = FALSE)
-train <- df[trainIndex, ]
-test <- df[-trainIndex, ]
+data <- read.csv("./dataset/rice_train.csv")
+data$Class <- as.factor(data$Class)
+
+trainIndex <- createDataPartition(data$Class,
+                                  times = 1,
+                                  p = .8, 
+                                  list = FALSE)
+train <- data[trainIndex, ]
+test <- data[-trainIndex, ]
 summary(train)
 ```
 
@@ -45,8 +48,8 @@ boxplot(train$Extent ~ train$Class, xlab="Class", ylab = "EquivDiameter")
 
 plot(train[,1:7])
 
-cor(train)
-corrplot(cor(train), method = "number")
+cor(train[,1:7])
+corrplot(cor(train[,1:7]), method = "number")
 ```
 
 ### Scatterplots
@@ -56,8 +59,8 @@ plot(train$Convex_Area, train$Area, type='p', col=ifelse(train$Class == 1, "dark
 ```
 
 ```{r}
-plot(train$Area, type='p')
-plot(train$Convex_Area, type='p')
+plot(train$Area, type='p', col="red", ylab = "Area vs Convex Area")
+points(train$Convex_Area, type = "p", col="black")
 ```
 
 ```{r}
@@ -69,31 +72,40 @@ train$Area <- NULL
 
 ## Performing LDA (Task #4)
 ```{r}
-resLda <- lda(formula = Class ~ ., data = train)
-resLda
+ldaModel <- lda(formula = Class ~ ., data = train)
+ldaModel
 ```
 With two classes (0/1), LDA produces only one discriminant function, which is sufficient to separate between the two classes in a one-dimensional space. Hence, the proportion of trace (percentage separations archived by LD1) is 100%
 ```{r}
-predLda <- predict(resLda)
-str(predLda)
+predLda.train <- predict(ldaModel, newdata = train)
+predLda.test <- predict(ldaModel, newdata = test)
+
+# Determine how well the model fits
+confusionMatrix(predLda.train$class, train$Class)
+confusionMatrix(predLda.test$class, test$Class)
 ```
 A Stacked Histogram can be used to see the class separation. The separation between the two classes is clear but with some overlap.
 ```{r}
-ldahist(data = predLda$x, g=train$Class)
+ldahist(data = predLda.train$x, g=train$Class)
 ```
+
+```{r}
+# Try with cross validation leave one out
+ldaModelCV <- lda(formula = Class ~ ., data = data, CV = TRUE)
+
+confusionMatrix(ldaModelCV$class, data$Class)
+```
+Based on the Accuracy, the model that we chose is the one without CV.
 
 ## Performing QDA (Task #5)
 ```{r}
-resLda <- qda(formula = Class ~ ., data = train)
-resLda
+qdaModel <- qda(formula = Class ~ ., data = train)
+qdaModel
 ```
 
 
 ##KNN
 ```{r}
-library(caret)
-library(class)
-
 #preproc
 
 preProcValues <- preProcess(train, method = c("center", "scale"))

@@ -1,0 +1,85 @@
+---
+title: "RF-LR"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+library(randomForest)
+```
+
+```{r}
+rm(list=ls())
+```
+
+```{r}
+train <- read.csv("rice_train.csv") 
+```
+
+```{r}
+test <- read.csv("rice_test.csv")
+```
+
+```{r}
+# Convert Class variable to factor
+train$Class <- factor(train$Class)
+```
+
+
+```{r}
+# Train a Random Forest classification model
+rf_model <- randomForest(Class ~ ., data = train, ntree = 100)
+```
+
+```{r}
+# Extract feature importance
+importance(rf_model)
+```
+
+```{r}
+summary(train)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r}
+# Visualize feature importance
+varImpPlot(rf_model)
+```
+
+```{r}
+glm.fits = glm(Class~ Major_Axis_Length + Perimeter + Convex_Area + Eccentricity + Minor_Axis_Length + Extent , data = train , family = binomial)
+```
+
+```{r}
+predictions <- predict(glm.fits, newdata = test[, c("Major_Axis_Length", "Perimeter", "Convex_Area", "Eccentricity", "Minor_Axis_Length" , "Extent")], type = "response")
+```
+
+```{r}
+# Convert probabilities to predicted classes (0 or 1)
+predicted_classes <- ifelse(predictions > 0.5, 2, 1)
+```
+
+```{r}
+str(predicted_classes)
+```
+
+```{r}
+write.table(file="4thSubmission.txt", predicted_classes, row.names = FALSE, col.names = FALSE)
+```
+
+```{r}
+
+```
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

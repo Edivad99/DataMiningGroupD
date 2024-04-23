@@ -8,7 +8,7 @@ output: html_document
 
 ```{r include=FALSE}
 # Clear workspace, install library & import data
-library(corrplot)
+library("corrplot")
 library("caret")
 library("Metrics")
 library(MASS)
@@ -27,9 +27,7 @@ trainIndex <- createDataPartition(df$Class,
 								  list = FALSE)
 train <- df[trainIndex, ]
 test <- df[-trainIndex, ]
-head(train)
 summary(train)
-
 ```
 
 
@@ -44,6 +42,12 @@ boxplot(train$Minor_Axis_Length ~ train$Class, xlab="Class", ylab = "MinorAxisLe
 boxplot(train$Eccentricity ~ train$Class, xlab="Class", ylab = "Eccentricity")
 boxplot(train$Convex_Area ~ train$Class, xlab="Class", ylab = "ConvexArea")
 boxplot(train$Extent ~ train$Class, xlab="Class", ylab = "EquivDiameter")
+
+
+plot(train[,1:7])
+
+cor(train)
+corrplot(cor(train), method = "number")
 ```
 
 ### Scatterplots
@@ -53,11 +57,14 @@ plot(train$Convex_Area, train$Area, type='p', col=ifelse(train$Class == 1, "dark
 ```
 
 ```{r}
-# Compute correlation matrix
-correlation_matrix <- cor(train)
+plot(train$Area, type='p')
+plot(train$Convex_Area, type='p')
+```
 
-# Visualize correlation matrix
-corrplot(correlation_matrix, method = "color")
+```{r}
+# Remove Area from train set
+# Convex_Area is highly correlated with Area
+train$Area <- NULL
 ```
 
 

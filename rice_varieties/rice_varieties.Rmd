@@ -22,51 +22,48 @@ set.seed(1234)
 rm(list = ls())
 data <- read.csv("./dataset/rice_train.csv")
 data$Class <- as.factor(data$Class)
+summary(data)
+```
+## Data exploration (Task #2)
 
+### Boxplots
+```{r}
+boxplot(data$Area ~ data$Class, xlab="Class", ylab = "Area")
+boxplot(data$Perimeter ~ data$Class, xlab="Class", ylab = "Perimeter")
+boxplot(data$Major_Axis_Length ~ data$Class, xlab="Class", ylab = "MajorAxisLength")
+boxplot(data$Minor_Axis_Length ~ data$Class, xlab="Class", ylab = "MinorAxisLength")
+boxplot(data$Eccentricity ~ data$Class, xlab="Class", ylab = "Eccentricity")
+boxplot(data$Convex_Area ~ data$Class, xlab="Class", ylab = "ConvexArea")
+boxplot(data$Extent ~ data$Class, xlab="Class", ylab = "EquivDiameter")
+
+
+plot(data[,1:7])
+
+cor(data[,1:7])
+corrplot(cor(data[,1:7]), method = "number")
+```
+
+### Scatterplots
+```{r}
+plot(data[,], col=ifelse(data$Class == 1, "darkred", "lightblue"))
+plot(data$Convex_Area, data$Area, type='p', col=ifelse(data$Class == 1, "darkred", "lightblue"), xlab = "ConvexArea", ylab = "Area")
+```
+
+```{r}
+plot(data$Area, type='p', col="red", ylab = "Area vs Convex Area")
+points(data$Convex_Area, type = "p", col="black")
+```
+
+```{r}
+# Remove Area from data set
+# Convex_Area is highly correlated with Area
+data$Area <- NULL
 trainIndex <- createDataPartition(data$Class,
                                   times = 1,
                                   p = .8, 
                                   list = FALSE)
 train <- data[trainIndex, ]
 test <- data[-trainIndex, ]
-summary(train)
-```
-
-
-## Data exploration (Task #2)
-
-### Boxplots
-```{r}
-boxplot(train$Area ~ train$Class, xlab="Class", ylab = "Area")
-boxplot(train$Perimeter ~ train$Class, xlab="Class", ylab = "Perimeter")
-boxplot(train$Major_Axis_Length ~ train$Class, xlab="Class", ylab = "MajorAxisLength")
-boxplot(train$Minor_Axis_Length ~ train$Class, xlab="Class", ylab = "MinorAxisLength")
-boxplot(train$Eccentricity ~ train$Class, xlab="Class", ylab = "Eccentricity")
-boxplot(train$Convex_Area ~ train$Class, xlab="Class", ylab = "ConvexArea")
-boxplot(train$Extent ~ train$Class, xlab="Class", ylab = "EquivDiameter")
-
-
-plot(train[,1:7])
-
-cor(train[,1:7])
-corrplot(cor(train[,1:7]), method = "number")
-```
-
-### Scatterplots
-```{r}
-plot(train[,], col=ifelse(train$Class == 1, "darkred", "lightblue"))
-plot(train$Convex_Area, train$Area, type='p', col=ifelse(train$Class == 1, "darkred", "lightblue"), xlab = "ConvexArea", ylab = "Area")
-```
-
-```{r}
-plot(train$Area, type='p', col="red", ylab = "Area vs Convex Area")
-points(train$Convex_Area, type = "p", col="black")
-```
-
-```{r}
-# Remove Area from train set
-# Convex_Area is highly correlated with Area
-train$Area <- NULL
 ```
 
 

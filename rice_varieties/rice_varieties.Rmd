@@ -117,6 +117,9 @@ confusionMatrix(qdaModelCV$class, data$Class)
 
 
 ##KNN
+
+Centering involves subtracting the mean of each variable, while scaling involves dividing by the standard deviation, ensuring that all variables have a mean of zero and a standard deviation of one.
+The K is tuned using a grid search ranging from 1 to 81 with a step size of 5. After the cross-validation, the best K (=41) is selected based on the accuracy.
 ```{r}
 #preproc
 
@@ -137,6 +140,7 @@ best_model<- knn3(
                   data = trainKNN,
                   k = knnModel$bestTune$k
                  )
+print(knnModel$bestTune$k)
 
 predictions <- predict(best_model, testKNN, type = "class")
 # Calculate confusion matrix

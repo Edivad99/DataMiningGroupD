@@ -14,6 +14,7 @@ library("Metrics")
 library("MASS")
 library("ggplot2")
 library("gridExtra")
+library("klaR")
 set.seed(1234)
 ```
 
@@ -28,18 +29,18 @@ summary(data)
 
 ### Boxplots
 ```{r}
-boxplot(data$Area ~ data$Class, xlab="Class", ylab = "Area")
-boxplot(data$Perimeter ~ data$Class, xlab="Class", ylab = "Perimeter")
-boxplot(data$Major_Axis_Length ~ data$Class, xlab="Class", ylab = "MajorAxisLength")
-boxplot(data$Minor_Axis_Length ~ data$Class, xlab="Class", ylab = "MinorAxisLength")
-boxplot(data$Eccentricity ~ data$Class, xlab="Class", ylab = "Eccentricity")
+#boxplot(data$Area ~ data$Class, xlab="Class", ylab = "Area")
+#boxplot(data$Perimeter ~ data$Class, xlab="Class", ylab = "Perimeter")
+#boxplot(data$Major_Axis_Length ~ data$Class, xlab="Class", ylab = "MajorAxisLength")
+#boxplot(data$Minor_Axis_Length ~ data$Class, xlab="Class", ylab = "MinorAxisLength")
+#boxplot(data$Eccentricity ~ data$Class, xlab="Class", ylab = "Eccentricity")
 boxplot(data$Convex_Area ~ data$Class, xlab="Class", ylab = "ConvexArea")
-boxplot(data$Extent ~ data$Class, xlab="Class", ylab = "EquivDiameter")
+#boxplot(data$Extent ~ data$Class, xlab="Class", ylab = "Extent")
 
 
-plot(data[,1:7])
+#plot(data[,1:7])
 
-cor(data[,1:7])
+#cor(data[,1:7])
 corrplot(cor(data[,1:7]), method = "number")
 ```
 
@@ -80,10 +81,12 @@ predLda.test <- predict(ldaModel, newdata = test)
 # Determine how well the model fits
 confusionMatrix(predLda.train$class, train$Class)
 confusionMatrix(predLda.test$class, test$Class)
+#https://forum.edgeimpulse.com/t/test-data-set-higher-accuracy-than-training-data-set/8200
 ```
 A Stacked Histogram can be used to see the class separation. The separation between the two classes is clear but with some overlap.
 ```{r}
 ldahist(data = predLda.train$x, g=train$Class)
+partimat(Class ~ ., data = test, method = "lda", plot.matrix = TRUE, col.correct='green', col.wrong='red')
 ```
 
 ```{r}
@@ -108,6 +111,11 @@ predQda.test <- predict(qdaModel, newdata = test)
 confusionMatrix(predQda.train$class, train$Class)
 confusionMatrix(predQda.test$class, test$Class)
 ```
+
+```{r}
+partimat(Class ~ ., data = test, method = "qda", plot.matrix = TRUE, col.correct='green', col.wrong='red')
+```
+
 ```{r}
 # Try with cross validation leave one out
 qdaModelCV <- qda(formula = Class ~ ., data = data, CV = TRUE)
@@ -116,7 +124,7 @@ confusionMatrix(qdaModelCV$class, data$Class)
 ```
 
 
-##KNN
+## Performing KNN (Task #7)
 
 Centering involves subtracting the mean of each variable, while scaling involves dividing by the standard deviation, ensuring that all variables have a mean of zero and a standard deviation of one.
 The K is tuned using a grid search ranging from 1 to 81 with a step size of 5. After the cross-validation, the best K (=41) is selected based on the accuracy.
@@ -128,18 +136,16 @@ trainKNN <- predict(preProcValues, train)
 testKNN <- predict(preProcValues, test)
 
 knnModel <- train(
-		     Class ~ ., 
-		     data = trainKNN, 
-	            method = "knn", 
-		     trControl = trainControl(method = "cv"), 
-		     tuneGrid = data.frame(k = seq(1,81, by=5))
-		    )
+  Class ~ ., 
+	data = trainKNN,
+  method = "knn", 
+  trControl = trainControl(method = "cv"), 
+  tuneGrid = data.frame(k = seq(1,81, by=5)))
 
 best_model<- knn3(
-                  Class ~ .,
-                  data = trainKNN,
-                  k = knnModel$bestTune$k
-                 )
+  Class ~ .,
+  data = trainKNN,
+  k = knnModel$bestTune$k)
 print(knnModel$bestTune$k)
 
 predictions <- predict(best_model, testKNN, type = "class")

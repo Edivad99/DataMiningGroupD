@@ -1,17 +1,54 @@
 ---
-title: "RF-LR"
+title: "LR_RF"
 output: html_document
+date: "2024-04-25"
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+# Implementation of Logistic Regression on the Rice Varieties dataset
 
-## R Markdown
+#### Group D
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+-   **Davide Albiero** [davide.albiero\@studenti.unipd.it](mailto:davide.albiero@studenti.unipd.it)
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+-   **Nazanin Ghorbani** [nazanin.ghorbani\@studenti.unipd.it](mailto:nazanin.ghorbani@studenti.unipd.it)
+
+-   **Raman Yudzeshka** [raman.yudzeshka\@studenti.unipd.it](mailto:raman.yudzeshka@studenti.unipd.it)
+
+-   **Niccolò Zenaro** [niccolo.zenaro\@studenti.unipd.it](mailto:niccolo.zenaro@studenti.unipd.it)
+
+-   **Luca Marchiori** [luca.marchiori.3\@studenti.unipd.it](mailto:luca.marchiori.3@studenti.unipd.it)
+
+-   **Mohammad Khosravi** [mohammad.khosravi.1\@studenti.unipd.it](mailto:mohammad.khosravi.1@studenti.unipd.it)
+
+## **Abstract**
+
+The report describes the use of Random Forest and logistic regression models for classification of rice varieties based on morphological features. We analyzed a dataset of rice grains, whereby we trained a model using the Random Forest algorithm for the identification of key features and then went ahead to implement logistic regression on selected features.
+
+## Dataset
+
+The dataset consists of train set with 2810 obs. of 7 morphological features with no missing values as below:
+
+#### Input Variables:
+
+1.  Area
+
+2.  Perimeter
+
+3.  Major Axis Length
+
+4.  Eccentricity
+
+5.  Convex Area
+
+6.  Extent
+
+#### Output Variable:
+
+7.  Class
+
+## Results
+
+We start by importing the Rice Variety dataset and defining the target variables as factors.
 
 ```{r}
 library(randomForest)
@@ -26,6 +63,10 @@ train <- read.csv("rice_train.csv")
 ```
 
 ```{r}
+head(train)
+```
+
+```{r}
 test <- read.csv("rice_test.csv")
 ```
 
@@ -34,6 +75,7 @@ test <- read.csv("rice_test.csv")
 train$Class <- factor(train$Class)
 ```
 
+Then the most important features were found using the Random Forest algorithm and the results are shown in the plot.
 
 ```{r}
 # Train a Random Forest classification model
@@ -49,20 +91,20 @@ importance(rf_model)
 summary(train)
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
 ```{r}
 # Visualize feature importance
 varImpPlot(rf_model)
 ```
 
+With the logistic regression model, the performances of the models have been evaluated one at a time by excluding one of the lesser important features. First, area; minor axis; extent; then minor axis; and finally, just extent in the models. It can be seen from the results that simply using all features for logistic regression had a higher accuracy than when some of the features were dropped. So, the final model have the accuracy of 0.935 using all the features.
+
 ```{r}
+# Fitting the Logestic Regression model
 glm.fits = glm(Class~ Major_Axis_Length + Perimeter + Convex_Area + Eccentricity + Minor_Axis_Length + Extent , data = train , family = binomial)
 ```
 
 ```{r}
+# Making prediction on the new data
 predictions <- predict(glm.fits, newdata = test[, c("Major_Axis_Length", "Perimeter", "Convex_Area", "Eccentricity", "Minor_Axis_Length" , "Extent")], type = "response")
 ```
 
@@ -78,8 +120,3 @@ str(predicted_classes)
 ```{r}
 write.table(file="4thSubmission.txt", predicted_classes, row.names = FALSE, col.names = FALSE)
 ```
-
-```{r}
-
-```
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

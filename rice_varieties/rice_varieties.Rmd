@@ -110,7 +110,7 @@ confusionMatrix(predQda.test$class, test$Class)
 ```
 ```{r}
 # Try with cross validation leave one out
-qdaModelCV <- lda(formula = Class ~ ., data = data, CV = TRUE)
+qdaModelCV <- qda(formula = Class ~ ., data = data, CV = TRUE)
 
 confusionMatrix(qdaModelCV$class, data$Class)
 ```
@@ -144,8 +144,5 @@ print(knnModel$bestTune$k)
 
 predictions <- predict(best_model, testKNN, type = "class")
 # Calculate confusion matrix
-cm <- confusionMatrix(predictions, testKNN$Class)
-cm
-
-
+confusionMatrix(predictions, testKNN$Class)
 ```

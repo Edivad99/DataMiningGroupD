@@ -2,8 +2,19 @@
 title: "Rice Varieties Classification"
 author: "Group D"
 date: "2024-04-22"
-output: html_document
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
 ---
+
+-   **Davide Albiero** davide.albiero@studenti.unipd.it
+-   **Nazanin Ghorbani** nazanin.ghorbani@studenti.unipd.it
+-   **Raman Yudzeshka** raman.yudzeshka@studenti.unipd.it
+-   **Niccolò Zenaro** niccolo.zenaro@studenti.unipd.it
+-   **Luca Marchiori** luca.marchiori.3@studenti.unipd.it
+-   **Mohammad Khosravi** mohammad.khosravi.1@studenti.unipd.it
+
 
 ```{r include=FALSE}
 # Clear workspace, install library & import data
@@ -123,6 +134,19 @@ qdaModelCV <- qda(formula = Class ~ ., data = data, CV = TRUE)
 confusionMatrix(qdaModelCV$class, data$Class)
 ```
 
+## Performing Logistic Regression (Task #6)
+
+With the logistic regression model, the performances of the models have been evaluated one at a time by excluding one of the lesser important features. First, area; minor axis; extent; then minor axis; and finally, just extent in the models. It can be seen from the results that simply using all features for logistic regression had a higher accuracy than when some of the features were dropped. So, the final model have the accuracy of 0.9537 using all the features.
+
+```{r}
+# Fitting the Logestic Regression model
+glm.fits = glm(Class~ ., data = train, family = binomial)
+# Making prediction on the new data
+predictions <- predict(glm.fits, newdata = test, type = "response") 
+# Convert probabilities to predicted classes (0 or 1)
+predicted_classes <- ifelse(predictions > 0.5, 2, 1)
+confusionMatrix(as.factor(predicted_classes), test$Class)
+```
 
 ## Performing KNN (Task #7)
 

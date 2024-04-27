@@ -30,7 +30,7 @@ set.seed(1234)
 ```
 
 ## Importing Dataset (Task #1)
-```{r}
+```{r echo=FALSE}
 rm(list = ls())
 data <- read.csv("./dataset/rice_train.csv")
 data$Class <- as.factor(data$Class)
@@ -39,7 +39,7 @@ summary(data)
 ## Data exploration (Task #2)
 
 ### Boxplots
-```{r}
+```{r echo=FALSE}
 #boxplot(data$Area ~ data$Class, xlab="Class", ylab = "Area")
 #boxplot(data$Perimeter ~ data$Class, xlab="Class", ylab = "Perimeter")
 #boxplot(data$Major_Axis_Length ~ data$Class, xlab="Class", ylab = "MajorAxisLength")
@@ -92,8 +92,13 @@ predLda.test <- predict(ldaModel, newdata = test)
 # Determine how well the model fits
 confusionMatrix(predLda.train$class, train$Class)
 confusionMatrix(predLda.test$class, test$Class)
+```
+
+```{r echo=FALSE}
 #https://forum.edgeimpulse.com/t/test-data-set-higher-accuracy-than-training-data-set/8200
 ```
+
+
 A Stacked Histogram can be used to see the class separation. The separation between the two classes is clear but with some overlap.
 ```{r}
 ldahist(data = predLda.train$x, g=train$Class)
@@ -151,7 +156,7 @@ confusionMatrix(as.factor(predicted_classes), test$Class)
 ## Performing KNN (Task #7)
 
 Centering involves subtracting the mean of each variable, while scaling involves dividing by the standard deviation, ensuring that all variables have a mean of zero and a standard deviation of one.
-The K is tuned using a grid search ranging from 1 to 81 with a step size of 5. After the cross-validation, the best K (=41) is selected based on the accuracy.
+The K is tuned using a grid search ranging from 1 to 81 with a step size of 5. After the cross-validation, the best K is selected based on the accuracy.
 ```{r}
 #preproc
 
@@ -170,7 +175,7 @@ best_model<- knn3(
   Class ~ .,
   data = trainKNN,
   k = knnModel$bestTune$k)
-print(knnModel$bestTune$k)
+print(paste("Best K:", knnModel$bestTune$k, sep=" "))
 
 predictions <- predict(best_model, testKNN, type = "class")
 # Calculate confusion matrix

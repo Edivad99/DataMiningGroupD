@@ -68,10 +68,9 @@ plot(data$Area, type='p', col="red", ylab = "Area vs Convex Area")
 points(data$Convex_Area, type = "p", col="black")
 ```
 
+## Splitting the dataset (Task #3)
 We proceed to remove the Area feature from the dataset.
 ```{r}
-# Remove Area from data set
-# Convex_Area is highly correlated with Area
 data$Area <- NULL
 trainIndex <- createDataPartition(data$Class,
                                   times = 1,

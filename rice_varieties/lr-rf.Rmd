@@ -59,7 +59,7 @@ rm(list=ls())
 ```
 
 ```{r}
-train <- read.csv("rice_train.csv") 
+train <- read.csv("dataset/rice_train.csv") 
 ```
 
 ```{r}
@@ -67,7 +67,7 @@ head(train)
 ```
 
 ```{r}
-test <- read.csv("rice_test.csv")
+test <- read.csv("./dataset/rice_test.csv")
 ```
 
 ```{r}

@@ -36,48 +36,54 @@ data <- read.csv("./dataset/rice_train.csv")
 data$Class <- as.factor(data$Class)
 summary(data)
 ```
-## Data exploration (Task #2)
-
-### Boxplots
-```{r echo=FALSE}
-#boxplot(data$Area ~ data$Class, xlab="Class", ylab = "Area")
-#boxplot(data$Perimeter ~ data$Class, xlab="Class", ylab = "Perimeter")
-#boxplot(data$Major_Axis_Length ~ data$Class, xlab="Class", ylab = "MajorAxisLength")
-#boxplot(data$Minor_Axis_Length ~ data$Class, xlab="Class", ylab = "MinorAxisLength")
-#boxplot(data$Eccentricity ~ data$Class, xlab="Class", ylab = "Eccentricity")
-boxplot(data$Convex_Area ~ data$Class, xlab="Class", ylab = "ConvexArea")
-#boxplot(data$Extent ~ data$Class, xlab="Class", ylab = "Extent")
-```
-
-### Correlation Plot
-From the plot, we can see that the Convex Area is highly correlated with the Area.
-```{r echo=FALSE}
-#plot(data[,1:7])
-#cor(data[,1:7])
-corrplot(cor(data[,1:7]), method = "number")
-```
-
-### Scatterplots
-```{r}
-plot(data[,], col=ifelse(data$Class == 1, "darkred", "lightblue"))
-plot(data$Convex_Area, data$Area, type='p', col=ifelse(data$Class == 1, "darkred", "lightblue"), xlab = "ConvexArea", ylab = "Area")
-```
-
-```{r}
-plot(data$Area, type='p', col="red", ylab = "Area vs Convex Area")
-points(data$Convex_Area, type = "p", col="black")
-```
-
 ## Splitting the dataset (Task #3)
-We proceed to remove the Area feature from the dataset.
 ```{r}
-data$Area <- NULL
 trainIndex <- createDataPartition(data$Class,
                                   times = 1,
                                   p = .8, 
                                   list = FALSE)
 train <- data[trainIndex, ]
 test <- data[-trainIndex, ]
+```
+
+## Data exploration (Task #2)
+
+### Boxplots
+```{r echo=FALSE}
+#boxplot(train$Area ~ train$Class, xlab="Class", ylab = "Area")
+#boxplot(train$Perimeter ~ train$Class, xlab="Class", ylab = "Perimeter")
+#boxplot(train$Major_Axis_Length ~ train$Class, xlab="Class", ylab = "MajorAxisLength")
+#boxplot(train$Minor_Axis_Length ~ train$Class, xlab="Class", ylab = "MinorAxisLength")
+#boxplot(train$Eccentricity ~ train$Class, xlab="Class", ylab = "Eccentricity")
+boxplot(train$Convex_Area ~ train$Class, xlab="Class", ylab = "ConvexArea")
+#boxplot(train$Extent ~ train$Class, xlab="Class", ylab = "Extent")
+```
+
+### Correlation Plot
+From the plot, we can see that the Convex Area is highly correlated with the Area, that means that they are "telling the same thing"
+That why after exploring the dataset Area is the most promissing features to delete.
+```{r echo=FALSE}
+#plot(train[,1:7])
+#cor(train[,1:7])
+corrplot(cor(train[,1:7]), method = "number")
+```
+
+### Scatterplots
+```{r}
+plot(train[,], col=ifelse(train$Class == 1, "darkred", "lightblue"))
+plot(train$Convex_Area, train$Area, type='p', col=ifelse(train$Class == 1, "darkred", "lightblue"), xlab = "ConvexArea", ylab = "Area")
+```
+
+```{r}
+plot(train$Area, type='p', col="red", ylab = "Area vs Convex Area")
+points(train$Convex_Area, type = "p", col="black")
+```
+
+We proceed to remove the Area feature from the dataset.
+```{r}
+train$Area <- NULL
+dataWithoutArea <- data
+dataWithoutArea$Area <- NULL
 ```
 
 
@@ -109,9 +115,9 @@ partimat(Class ~ ., data = test, method = "lda", plot.matrix = TRUE, col.correct
 
 ```{r}
 # Try with cross validation leave one out
-ldaModelCV <- lda(formula = Class ~ ., data = data, CV = TRUE)
+ldaModelCV <- lda(formula = Class ~ ., data = dataWithoutArea, CV = TRUE)
 
-confusionMatrix(ldaModelCV$class, data$Class)
+confusionMatrix(ldaModelCV$class, dataWithoutArea$Class)
 ```
 Based on the Accuracy, the model that we chose is the one without CV.
 
@@ -136,9 +142,9 @@ partimat(Class ~ ., data = test, method = "qda", plot.matrix = TRUE, col.correct
 
 ```{r}
 # Try with cross validation leave one out
-qdaModelCV <- qda(formula = Class ~ ., data = data, CV = TRUE)
+qdaModelCV <- qda(formula = Class ~ ., data = dataWithoutArea, CV = TRUE)
 
-confusionMatrix(qdaModelCV$class, data$Class)
+confusionMatrix(qdaModelCV$class, dataWithoutArea$Class)
 ```
 
 ## Performing Logistic Regression (Task #6)

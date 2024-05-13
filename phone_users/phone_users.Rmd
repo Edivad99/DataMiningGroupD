@@ -9,8 +9,11 @@ output: html_document
 # Clear workspace, install library & import data
 library("caret")
 library("Metrics")
+library("corrplot")
 set.seed(1234)
+```
 
+```{r include=FALSE}
 rm(list = ls())
 train <- read.csv("phone_train.csv", header=TRUE)
 test <- read.csv("phone_validation.csv", header=TRUE)
@@ -29,6 +32,9 @@ plot(train$activation.zone)
 summary(train$activation.zone)
 
 plot(train$activation.channel)
+summary(train$activation.channel)
+
+plot(train[,89:98])
 
 summary(train)
 ```
@@ -42,19 +48,32 @@ plotdata <- function (column, title, ylim){
 }
 ```
 
+
+
 ```{r}
 plotdata(".out.ch.peak", "mean total monthly number of outgoing calls\nat times when the tariff is highest", c(50, 110))
-plotdata(".out.dur.peak", "mean total monthly duration of outgoing calls\nat times when the tariff is highest", c(5000, 13000))
-plotdata(".out.val.peak", "mean total monthly value of outgoing calls\nat times when the tariff is highest", c(25, 60))
+#plotdata(".out.dur.peak", "mean total monthly duration of outgoing calls\nat times when the tariff is highest", c(5000, 13000))
+#plotdata(".out.val.peak", "mean total monthly value of outgoing calls\nat times when the tariff is highest", c(25, 60))
+
 plotdata(".out.ch.offpeak", "mean total monthly number of outgoing calls during off-peak hours", c(0, 10))
-plotdata(".out.dur.offpeak", "mean total monthly duration of outgoing calls during off-peak hours", c(300, 900))
-plotdata(".out.val.offpeak", "mean total monthly value of outgoing calls during off-peak hours", c(0, 4))
+#plotdata(".out.dur.offpeak", "mean total monthly duration of outgoing calls during off-peak hours", c(300, 900))
+#plotdata(".out.val.offpeak", "mean total monthly value of outgoing calls during off-peak hours", c(0, 4))
+
 plotdata(".in.ch.tot", "mean total monthly number of incoming calls", c(50, 100))
-plotdata(".in.dur.tot", "mean total monthly duration of incoming calls", c(4000, 9000))
+#plotdata(".in.dur.tot", "mean total monthly duration of incoming calls", c(4000, 9000))
+
 plotdata(".ch.sms", "mean total monthly number of SMS sent", c(0, 5))
 plotdata(".ch.cc", "mean total monthly number of calls to the Customer Service Centre", c(0, 1))
 ```
 
+```{r}
+for (i in 0:8) {
+  index = i * 10 + 9
+  corrplot(cor(train[,index:(index+2)]), method = "number")
+  #corrplot(cor(train[,(index+3):(index+5)]), method = "number")
+  #corrplot(cor(train[,(index+6):(index+7)]), method = "number")
+}
+```
 
 ```{r}
 fit <- lm(log(y+1) ~ . , data=train)
@@ -62,26 +81,4 @@ yhat <- exp(predict(fit, newdata=test) )-1
 yhat=pmax(0,yhat)
 summary(yhat)
 write.table(file="mySubmission.txt", yhat,row.names = FALSE,col.names = FALSE)
-```
-
-
-##To binary
-```{r}
-library(dplyr)
-
-to_binary_column_names = c("tariff.plan", "payment.method", "sex", "activation.zone", "activation.channel", "vas1", "vas2")
-
-for (to_binary_colname in to_binary_column_names){
-  new.column <- sapply(levels(factor(train[[to_binary_colname]])), function(level) {
-    col_name <- paste(to_binary_colname, level, sep = "")
-    (train[[to_binary_colname]] == level) * 1
-  })
-  colnames(new.column) <- paste(to_binary_colname, levels(factor(train[[to_binary_colname]])), sep = "")
-  
-  
-  train <- cbind(train, new.column)
-  
-  train <- select(train, -to_binary_colname)
-}
-train
 ```

@@ -22,17 +22,24 @@ train$sex <- as.factor(train$sex)
 train$payment.method <- as.factor(train$payment.method)
 train$activation.zone <- as.factor(train$activation.zone)
 train$activation.channel <- as.factor(ifelse(train$activation.channel==5, 1, 0)) #Merge 
-train$tariff.plan <- as.factor(ifelse(train$tariff.plan <= 6, 1, train$tariff.plan)) #Merge 
+train$tariff.plan <- as.factor(ifelse(train$tariff.plan <= 6, 1, train$tariff.plan)) #Merge
 train$vas1 <- as.factor(train$vas1)
 train$vas2 <- as.factor(train$vas2)
 
+test$tariff.plan <- as.factor(ifelse(test$tariff.plan <= 6, 1, test$tariff.plan)) #Merge
+test$activation.zone <- as.factor(ifelse(test$activation.zone == 0, 1, test$activation.zone))
+test$activation.channel <- as.factor(ifelse(test$activation.channel==5, 1, 0)) #Merge
+```
+
+```{r}
 plot(train$sex)
 plot(train$payment.method)
 plot(train$activation.zone)
 summary(train$activation.zone)
 
 plot(train$activation.channel)
-summary(train$activation.channel)
+summary(train$activation.zone)
+summary(test$activation.zone)
 
 plot(train[,89:98])
 
@@ -76,9 +83,9 @@ for (i in 0:8) {
 ```
 
 ```{r}
-fit <- lm(log(y+1) ~ . , data=train)
-yhat <- exp(predict(fit, newdata=test) )-1
-yhat=pmax(0,yhat)
+fit <- lm(y ~ . , data=train)
+yhat <- predict(fit, newdata=test)
+yhat <- pmax(0, yhat)
 summary(yhat)
 write.table(file="mySubmission.txt", yhat,row.names = FALSE,col.names = FALSE)
 ```

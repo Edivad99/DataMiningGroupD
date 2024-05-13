@@ -83,9 +83,103 @@ for (i in 0:8) {
 ```
 
 ```{r}
-fit <- lm(y ~ . , data=train)
-yhat <- predict(fit, newdata=test)
-yhat <- pmax(0, yhat)
-summary(yhat)
-write.table(file="mySubmission.txt", yhat,row.names = FALSE,col.names = FALSE)
+# train$q01.out.dur.peak <- NULL
+# train$q01.out.val.peak <- NULL
+# train$q02.out.dur.peak <- NULL
+# train$q02.out.val.peak <- NULL
+# train$q03.out.dur.peak <- NULL
+# train$q03.out.val.peak <- NULL
+# train$q04.out.dur.peak <- NULL
+# train$q04.out.val.peak <- NULL
+# train$q05.out.dur.peak <- NULL
+# train$q05.out.val.peak <- NULL
+# train$q06.out.dur.peak <- NULL
+# train$q06.out.val.peak <- NULL
+# train$q07.out.dur.peak <- NULL
+# train$q07.out.val.peak <- NULL
+# train$q08.out.dur.peak <- NULL
+# train$q08.out.val.peak <- NULL
+# train$q09.out.dur.peak <- NULL
+# train$q09.out.val.peak <- NULL
+# 
+# train$q01.out.dur.offpeak <- NULL
+# train$q01.out.val.offpeak <- NULL
+# train$q02.out.dur.offpeak <- NULL
+# train$q02.out.val.offpeak <- NULL
+# train$q03.out.dur.offpeak <- NULL
+# train$q03.out.val.offpeak <- NULL
+# train$q04.out.dur.offpeak <- NULL
+# train$q04.out.val.offpeak <- NULL
+# train$q05.out.dur.offpeak <- NULL
+# train$q05.out.val.offpeak <- NULL
+# train$q06.out.dur.offpeak <- NULL
+# train$q06.out.val.offpeak <- NULL
+# train$q07.out.dur.offpeak <- NULL
+# train$q07.out.val.offpeak <- NULL
+# train$q08.out.dur.offpeak <- NULL
+# train$q08.out.val.offpeak <- NULL
+# train$q09.out.dur.offpeak <- NULL
+# train$q09.out.val.offpeak <- NULL
+# 
+# train$q01.in.dur.tot <- NULL
+# train$q02.in.dur.tot <- NULL
+# train$q03.in.dur.tot <- NULL
+# train$q04.in.dur.tot <- NULL
+# train$q05.in.dur.tot <- NULL
+# train$q06.in.dur.tot <- NULL
+# train$q07.in.dur.tot <- NULL
+# train$q08.in.dur.tot <- NULL
+# train$q09.in.dur.tot <- NULL
+
+```
+
+```{r}
+?pairs
+pairs(y~q01.in.dur.tot + q02.in.dur.tot, data=train)
+```
+
+```{r}
+baseModel <- lm(y ~ 1, data = train)
+FwStepSel <- step(baseModel, direction = "forward", scope = list(lower = baseModel, upper = lm(y ~ ., data = train)), trace = 0)
+
+#Based on the previous step results:
+fit = lm(formula = FwStepSel$call$formula, data = train)
+summary(fit)
+#yhat = predict(fit, newdata=test)
+```
+
+```{r}
+fullModel <- lm(y ~ ., data = train)
+BwStepSel <- step(fullModel, direction="backward", trace = 0)
+
+
+#Based on the previous step results:
+fit = lm(formula = BwStepSel$call$formula, data = train)
+summary(fit)
+yhat = predict(fit, newdata=test)
+```
+
+```{r}
+# Train a Random Forest classification model
+rf_model <- randomForest(y ~ ., data = train, ntree = 100)
+plot(rf_model)
+# Extract feature importance
+importance(rf_model)
+# Visualize feature importance
+varImpPlot(rf_model)
+```
+
+```{r}
+library(rpart)
+fit=rpart(y~., train)
+plot(fit)
+text(fit)
+```
+
+
+```{r}
+#fit <- lm(y ~ . , data=train)
+#summary(fit)
+#yhat <- predict(fit, newdata=test)
+write.table(file="mySubmission.txt", pmax(0, yhat),row.names = FALSE,col.names = FALSE)
 ```

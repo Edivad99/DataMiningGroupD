@@ -21,14 +21,18 @@ test <- read.csv("phone_validation.csv", header=TRUE)
 train$sex <- as.factor(train$sex)
 train$payment.method <- as.factor(train$payment.method)
 train$activation.zone <- as.factor(train$activation.zone)
-train$activation.channel <- as.factor(ifelse(train$activation.channel==5, 1, 0)) #Merge 
+train$activation.channel <- as.factor(ifelse(train$activation.channel==5, 1, 0)) #Merge
 train$tariff.plan <- as.factor(ifelse(train$tariff.plan <= 6, 1, train$tariff.plan)) #Merge
 train$vas1 <- as.factor(train$vas1)
 train$vas2 <- as.factor(train$vas2)
 
-test$tariff.plan <- as.factor(ifelse(test$tariff.plan <= 6, 1, test$tariff.plan)) #Merge
-test$activation.zone <- as.factor(ifelse(test$activation.zone == 0, 1, test$activation.zone))
-test$activation.channel <- as.factor(ifelse(test$activation.channel==5, 1, 0)) #Merge
+# test$sex <- as.factor(test$sex)
+# test$payment.method <- as.factor(test$payment.method)
+# test$activation.zone <- as.factor(ifelse(test$activation.zone == 0, 1, test$activation.zone))
+# test$activation.channel <- as.factor(ifelse(test$activation.channel==5, 1, 0)) #Merge
+# test$tariff.plan <- as.factor(ifelse(test$tariff.plan <= 6, 1, test$tariff.plan)) #Merge
+# test$vas1 <- as.factor(test$vas1)
+# test$vas2 <- as.factor(test$vas2)
 ```
 
 ```{r}
@@ -134,11 +138,6 @@ for (i in 0:8) {
 ```
 
 ```{r}
-?pairs
-pairs(y~q01.in.dur.tot + q02.in.dur.tot, data=train)
-```
-
-```{r}
 baseModel <- lm(y ~ 1, data = train)
 FwStepSel <- step(baseModel, direction = "forward", scope = list(lower = baseModel, upper = lm(y ~ ., data = train)), trace = 0)
 
@@ -160,26 +159,20 @@ yhat = predict(fit, newdata=test)
 ```
 
 ```{r}
+library(randomForest)
 # Train a Random Forest classification model
-rf_model <- randomForest(y ~ ., data = train, ntree = 100)
-plot(rf_model)
+rf_model <- randomForest(y ~ ., data = train, mtry = 30, importance = TRUE)
+summary(rf_model)
 # Extract feature importance
 importance(rf_model)
 # Visualize feature importance
 varImpPlot(rf_model)
+yhat <- predict(rf_model, newdata=test)
 ```
-
-```{r}
-library(rpart)
-fit=rpart(y~., train)
-plot(fit)
-text(fit)
-```
-
 
 ```{r}
 #fit <- lm(y ~ . , data=train)
 #summary(fit)
 #yhat <- predict(fit, newdata=test)
-write.table(file="mySubmission.txt", pmax(0, yhat),row.names = FALSE,col.names = FALSE)
+write.table(file="mySubmission.txt", pmax(0, yhat), row.names = FALSE,col.names = FALSE)
 ```

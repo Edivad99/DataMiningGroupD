@@ -77,3 +77,57 @@ bestFit <- lm(bestFormula, data=train, method="lm", trControl=fitControl)
 ggplot(train, aes(x=RDCHI, y=LC50)) + geom_point(size=0.5, color="#34495e") + geom_line(aes(y=predict(bestFit), color="#c0392b"), show.legend = FALSE)
 
 ```
+
+## 4. 
+```{r}
+# let's use 30 DOF and compare step function and cubic spline
+# then it'll be 30 knots for the step function and 26 for the cubic spline
+
+knots <- quantile(train$RDCHI, probs = seq(0, 1, length.out = 26))
+
+# Step function
+train$RDCHI_step <- cut(train$RDCHI, breaks=30, labels=FALSE)
+
+# Define the model formulas
+step_model_formula <- LC50 ~ factor(RDCHI_step)
+spline_model_formula <- as.formula(paste("LC50 ~ bs(RDCHI, knots = ", knots[-c(1, length(knots))], ", degree = 3)"))
+
+spline_model_formula
+
+# Define train control with 10-fold cross-validation
+ctrl <- trainControl(method = "cv", number = 10)
+
+str(train)
+# Fit the models and calculate RMSE using cross-validation
+model_step <- train(step_model_formula, data = train, method = "lm", trControl = ctrl)
+model_spline <- train(spline_model_formula, data = train, method = "lm", trControl = ctrl)
+
+summary(model_spline)
+
+
+# Predicting
+train$predicted_LC50_spline <- predict(model_spline, newdata=train)
+train$predicted_LC50_step <- predict(model_step, newdata=train)
+
+# Print RMSE for both models
+cat("RMSE for Step Function Model (CV): ", model_step$results$RMSE, "\n")
+cat("RMSE for Cubic Spline Model (CV): ", model_spline$results$RMSE, "\n")
+
+
+# Plot the results
+ggplot() +
+  # Train data
+  geom_point(data=train, aes(x = RDCHI, y = LC50), alpha = 0.5) +
+  # Step function predictions
+  stat_summary_bin(data=train, aes(x = RDCHI, y = predicted_LC50_step), 
+                   bins = 30, geom = "step", color = "red", size = 1, alpha = 0.8) +
+  # Cubic spline predictions
+  geom_line(data=train, aes(x = RDCHI, y = predicted_LC50_spline), 
+            color = "blue", size = 1, alpha = 0.8) +
+  labs(title = "Step Function vs Cubic Spline Regression", 
+       x = "RDCHI", 
+       y = "LC50") +
+  theme_minimal()
+
+
+```

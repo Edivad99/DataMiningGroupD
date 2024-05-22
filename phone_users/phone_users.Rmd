@@ -170,6 +170,37 @@ varImpPlot(rf_model)
 yhat <- predict(rf_model, newdata=test)
 ```
 
+Random forest with mtry search
+```{r}
+
+library(parallel) 
+no_cores <- detectCores() - 1
+library(doParallel)
+
+cl <- makePSOCKcluster(no_cores)
+registerDoParallel(cl)
+# Define a grid of mtry values to search over
+tuneGrid <- expand.grid(mtry = seq(1, ncol(train) - 1, by = 1))
+
+# Set up cross-validation control
+#rForestCtrl <- trainControl(method = "cv", number = 5, search = "grid")
+
+# Train the model with the tuning grid
+rForestFit <- train(y ~ ., data = train, method = "rf", preProcess = c("center", "scale"), tuneGrid = tuneGrid, allowParallel = TRUE)
+
+# Get the importance of each feature and plot it
+importance <- importance(rForestFit$finalModel)
+varImpPlot(rForestFit$finalModel)
+
+# Predict the quality of the test set
+yhat = predict(rForestFit, newdata = test)
+
+# Get the final mtry value
+rForestFit$finalModel$mtry
+
+```
+
+
 ```{r}
 #fit <- lm(y ~ . , data=train)
 #summary(fit)

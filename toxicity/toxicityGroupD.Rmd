@@ -145,25 +145,26 @@ res <- list()
 for (i in 2:max_df) {
   spline <- smooth.spline(train$RDCHI, train$LC50, df = i)
   # The CV score is often called “PRESS” (and labeled on print()), for 'PREdiction Sum of Squares'.
-  print(paste("df:", i, "Cross-validation score:", spline$cv.crit))
+  # print(paste("df:", i, "Cross-validation score:", spline$cv.crit))
   res <- c(res, spline$cv.crit)
 }
 ```
 Draw a plot that show flexibility of the model vs RSS (or any other measure of quality of the prediction) and choose the best model among them.
 ```{r}
 plot(2:max_df, res, type = "l", xlab = "Degrees of freedom", ylab = "Cross-validation score")
+points(which.min(res), res[which.min(res)], pch = 19, col = "red")
+legend("topright", legend = c(paste("Best df:", which.min(res), sep = "")), col = c("red"), pch = 19)
 ```
 Draw a scatter plot showing data and predicted (chosen) function. Explain the model and the choice (2 lines).
 ```{r}
 reg <- lm(LC50 ~ RDCHI, data=train)
-plot(train$RDCHI, train$LC50, xlab="RDCHI", ylab="LC50")
+plot(train$RDCHI, train$LC50, xlab="RDCHI", ylab="LC50", pch=20, col="black")
 abline(reg, col="blue")
 #fit a spline with 15 degrees of freedom
 spline <- smooth.spline(train$RDCHI, train$LC50, df=15)
 lines(spline, col="red")
 legend("topright", legend=c("Linear", "Spline"), col=c("blue", "red"), lty=1)
 ```
-
 
 ### Task 6
 ```{r}

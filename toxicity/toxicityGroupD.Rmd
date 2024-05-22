@@ -34,3 +34,46 @@ RMSE <- function(y, model){
 }
 ```
 
+### Task 3
+
+For this task, we train the model multiple times by increasing at each train the polynomial degree (from 1 to 5). The RMSE of each model is calculated after the cross-validation. The cross validation is used to ensure that the calculated RMSE is a good quality and not biased measure.
+
+The results show that the 2-degree polynomial is the one with the lowest RMSE. A plot that compares the RMSE and the degree of polynomial is shown. In the end we also plot the final model function on the data scatterplot.
+```{r}
+# Train a model by trying multiple polynomial degrees. Save the models and their cross-validated RMSEs in a list and choose the best model based on the RMSE.
+
+set.seed(123)
+degrees <- 1:7
+models <- list()
+rmses <- c()
+
+fitControl <- trainControl(method = "cv", number = 10)
+
+for (degree in degrees){
+  # Build up the formula with the selected degree
+  formula <- as.formula(paste("LC50 ~ poly(RDCHI, ", degree, ")", sep=""))
+  
+  # Train the model
+  fit <- caret::train(formula, data=train, method="lm", trControl=fitControl, preProcess=c("center", "scale"))
+  
+  # Get the cross-validated RMSE
+  fitRmse <- fit$results$RMSE
+  # Save the model RMSE
+  rmses <- c(rmses, fitRmse)
+}
+
+# Plot the flexibility of the model vs RMSE
+ggplot(data.frame(degree=degrees, RMSE=rmses), aes(x=degree, y=RMSE)) + geom_point() + geom_line()
+
+# Choose the best model
+bestDegree <- degrees[which.min(rmses)]
+bestDegree
+
+# Train the best model again (just for the sake of plotting it)
+bestFormula <- as.formula(paste("LC50 ~ poly(RDCHI, ", bestDegree, ")", sep=""))
+bestFit <- lm(bestFormula, data=train, method="lm", trControl=fitControl)
+
+# Plot the data and the best model
+ggplot(train, aes(x=RDCHI, y=LC50)) + geom_point() + geom_line(aes(y=predict(bestFit), color="red"), show.legend = FALSE)
+
+```

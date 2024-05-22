@@ -85,15 +85,16 @@ ggplot(train, aes(x=RDCHI, y=LC50)) + geom_point(size=0.5, color="#34495e") + ge
 # let's use 30 DOF and compare step function and cubic spline
 # then it'll be 30 knots for the step function and 26 for the cubic spline
 
-knots <- quantile(train$RDCHI, probs = seq(0, 1, length.out = 26))
+knots <- quantile(train$RDCHI, probs = seq(0, 1, length.out = 28))
 
 # Step function
 train$RDCHI_step <- cut(train$RDCHI, breaks=30, labels=FALSE)
 
 # Define the model formulas
 step_model_formula <- LC50 ~ factor(RDCHI_step)
-spline_model_formula <- as.formula(paste("LC50 ~ splines::bs(RDCHI, knots = ", knots[-c(1, length(knots))], ", degree = 3)"))
 
+str_knots <- paste("c(", noquote(paste(knots[-c(1, length(knots))], collapse = ", ")), ")", sep = "")
+spline_model_formula <- as.formula(paste("LC50 ~ splines::bs(RDCHI, knots = ", str_knots, ", degree = 3)", sep = ""))
 spline_model_formula
 
 # Define train control with 10-fold cross-validation
@@ -135,33 +136,33 @@ ggplot() +
 ```
 
 ### Task 5
-Perform a smoothing splines regression model using RDCHI to predict LC50.
+First, we need to find the best degrees of freedom for the model. We use the cross-validation score to find the best degrees of freedom.
 ```{r}
-# Fit a linear model
-max_df = 50
-
+max_df = 30
 res <- list()
-# Fit a smoothing spline from 2 to 20 degrees of freedom and save res in an array
 for (i in 2:max_df) {
   spline <- smooth.spline(train$RDCHI, train$LC50, df = i)
   # The CV score is often called “PRESS” (and labeled on print()), for 'PREdiction Sum of Squares'.
   # print(paste("df:", i, "Cross-validation score:", spline$cv.crit))
   res <- c(res, spline$cv.crit)
 }
+best_df <- which.min(res)
 ```
-Draw a plot that show flexibility of the model vs RSS (or any other measure of quality of the prediction) and choose the best model among them.
+We plot the degrees of freedom on the x-axis and the cross-validation score on the y-axis. The best model is chosen based on the minimum cross-validation score.
 ```{r}
 plot(2:max_df, res, type = "l", xlab = "Degrees of freedom", ylab = "Cross-validation score")
-points(which.min(res), res[which.min(res)], pch = 19, col = "red")
-legend("topright", legend = c(paste("Best df:", which.min(res), sep = "")), col = c("red"), pch = 19)
+points(best_df, res[best_df], pch = 19, col = "red")
+legend("topright", legend = c(paste("Best df:", best_df, sep = "")), col = c("red"), pch = 19)
 ```
-Draw a scatter plot showing data and predicted (chosen) function. Explain the model and the choice (2 lines).
+
+We plot the data, the basis linear model and the chosen spline model with the best degrees of freedom.
+The model is chosen based on the minimum cross-validation score.
 ```{r}
 reg <- lm(LC50 ~ RDCHI, data=train)
 plot(train$RDCHI, train$LC50, xlab="RDCHI", ylab="LC50", pch=20, col="black")
 abline(reg, col="blue")
-#fit a spline with 15 degrees of freedom
-spline <- smooth.spline(train$RDCHI, train$LC50, df=15)
+#fit a spline with x degrees of freedom
+spline <- smooth.spline(train$RDCHI, train$LC50, df=which.min(res))
 lines(spline, col="red")
 legend("topright", legend=c("Linear", "Spline"), col=c("blue", "red"), lty=1)
 ```

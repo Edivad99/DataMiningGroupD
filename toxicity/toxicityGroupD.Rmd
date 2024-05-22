@@ -47,7 +47,7 @@ degrees <- 1:7
 models <- list()
 rmses <- c()
 
-fitControl <- trainControl(method = "cv", number = 10)
+fitControl <- trainControl(method = "cv", number = 20)
 
 for (degree in degrees){
   # Build up the formula with the selected degree
@@ -63,7 +63,7 @@ for (degree in degrees){
 }
 
 # Plot the flexibility of the model vs RMSE
-ggplot(data.frame(degree=degrees, RMSE=rmses), aes(x=degree, y=RMSE)) + geom_point() + geom_line()
+ggplot(data.frame(degree=degrees, RMSE=rmses), aes(x=degree, y=RMSE)) + geom_point() + geom_line() + xlab("Degree of polynomial") + ylab("RMSE")
 
 # Choose the best model
 bestDegree <- degrees[which.min(rmses)]
@@ -74,6 +74,6 @@ bestFormula <- as.formula(paste("LC50 ~ poly(RDCHI, ", bestDegree, ")", sep=""))
 bestFit <- lm(bestFormula, data=train, method="lm", trControl=fitControl)
 
 # Plot the data and the best model
-ggplot(train, aes(x=RDCHI, y=LC50)) + geom_point() + geom_line(aes(y=predict(bestFit), color="red"), show.legend = FALSE)
+ggplot(train, aes(x=RDCHI, y=LC50)) + geom_point(size=0.5, color="#34495e") + geom_line(aes(y=predict(bestFit), color="#c0392b"), show.legend = FALSE)
 
 ```

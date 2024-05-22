@@ -9,6 +9,9 @@ output: html_notebook
 library(caret)
 library(ggplot2)
 library(corrplot)
+library(mgcv)
+library(tidyr)
+library(dplyr)
 #Clear the workspace
 rm(list=ls())
 ```
@@ -130,4 +133,44 @@ ggplot() +
   theme_minimal()
 
 
+```
+
+```{r}
+#Task 6 - Mohammad
+# Check the number of unique values in each predictor
+sapply(train, function(x) length(unique(x)))
+
+# Fit a GAM model using natural cubic splines with reduced knots for each predictor
+gam_model <- gam(LC50 ~ 
+                   s(TPSA, bs = "cs", k = 20) +   # Less than 193
+                   s(SAacc, bs = "cs", k = 20) +  # Less than 182
+                   s(H050, bs = "cs", k = 9) +    # Less than 10
+                   s(MLOGP, bs = "cs", k = 20) +  # Less than 349 (k can be higher but 20 is reasonable)
+                   s(RDCHI, bs = "cs", k = 20) +  # Less than 297 (k can be higher but 20 is reasonable)
+                   s(GATS1p, bs = "cs", k = 20) + # Less than 349 (k can be higher but 20 is reasonable)
+                   s(nN, bs = "cs", k = 9) +      # Less than 9
+                   s(C040, bs = "cs", k = 6),     # Less than 6
+                 data = train)
+
+# Summarize the model
+summary(gam_model)
+
+# Extract partial effects of each predictor
+partial_effects <- predict(gam_model, type = "terms", se.fit = TRUE)
+partial_effects_df <- as.data.frame(partial_effects$fit)
+colnames(partial_effects_df) <- gsub("\\.s\\(.*\\)", "", colnames(partial_effects_df))
+partial_effects_df$LC50 <- train$LC50
+
+# Convert the data to long format for ggplot
+partial_effects_long <- partial_effects_df %>%
+  pivot_longer(cols = -LC50, names_to = "Predictor", values_to = "Effect")
+
+# Plot the effects of each predictor using ggplot2
+ggplot(partial_effects_long, aes(x = Effect, y = LC50)) +
+  geom_point() +
+  facet_wrap(~ Predictor, scales = "free_x") +
+  labs(title = "Partial Effects of Predictors on LC50 using natural cubic splines",
+       x = "Partial Effect",
+       y = "LC50") +
+  theme_minimal()
 ```

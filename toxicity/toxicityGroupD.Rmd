@@ -15,7 +15,7 @@ output:
 - **Luca Marchiori** luca.marchiori.3@studenti.unipd.it
 - **Mohammad Khosravi** mohammad.khosravi.1@studenti.unipd.it
 
-```{r}
+```{r include=FALSE}
 # Load libraries
 library(caret)
 library(ggplot2)

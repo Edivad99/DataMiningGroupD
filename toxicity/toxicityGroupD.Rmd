@@ -51,9 +51,9 @@ ggpairs(train,
   diag = list(continuous = wrap("densityDiag", fill = "lightblue", alpha = 0.7)),
   axisLabels = "show")
 #TODO what's going on
-ggplot(train, aes(x =nN, y=LC50)) + geom_point()
-ggplot(train, aes(x =H050, y=LC50)) + geom_point()
-ggplot(train, aes(x =C040, y=LC50)) + geom_point()
+ggplot(train, aes(x =nN, y=LC50)) + geom_point() + theme_minimal()
+ggplot(train, aes(x =H050, y=LC50)) + geom_point() + theme_minimal()
+ggplot(train, aes(x =C040, y=LC50)) + geom_point() + theme_minimal()
 ```
 
 ### Task 3
@@ -84,7 +84,11 @@ for (degree in degrees){
 }
 
 # Plot the flexibility of the model vs RMSE
-ggplot(data.frame(degree=degrees, RMSE=rmses), aes(x=degree, y=RMSE)) + geom_point() + geom_line() + xlab("Degree of polynomial") + ylab("RMSE")
+ggplot(data.frame(degree=degrees, RMSE=rmses), aes(x=degree, y=RMSE)) +
+  geom_point() +
+  geom_line() +
+  xlab("Degree of polynomial") + ylab("RMSE") +
+  theme_minimal()
 
 # Choose the best model
 bestDegree <- degrees[which.min(rmses)]
@@ -95,11 +99,14 @@ bestFormula <- as.formula(paste("LC50 ~ poly(RDCHI, ", bestDegree, ")", sep=""))
 bestFit <- lm(bestFormula, data=train, method="lm", trControl=fitControl)
 
 # Plot the data and the best model
-ggplot(train, aes(x=RDCHI, y=LC50)) + geom_point(size=0.5, color="#34495e") + geom_line(aes(y=predict(bestFit), color="#c0392b"), show.legend = FALSE)
-
+ggplot(train, aes(x=RDCHI, y=LC50)) +
+  geom_point(size=0.5, color="#34495e") +
+  geom_line(aes(y=predict(bestFit), color="#c0392b"), show.legend = FALSE) +
+  theme_minimal()
 ```
 
 ### Task 4
+In this task, we aimed to compare the performance of a step function model with 29 knots and a cubic spline model with 26 knots, both resulting in 30 DOF.
 ```{r}
 # let's use 30 DOF and compare step function and cubic spline
 # then it'll be 30 knots for the step function and 26 for the cubic spline
@@ -133,9 +140,9 @@ train$predicted_LC50_step <- predict(model_step, newdata=train)
 # Print RMSE for both models
 cat("RMSE for Step Function Model (CV): ", model_step$results$RMSE, "\n")
 cat("RMSE for Cubic Spline Model (CV): ", model_spline$results$RMSE, "\n")
-
-
-# Plot the results
+```
+The step function model slightly outperformed the cubic spline model (RMSE: 1.441 vs. 1.510) due to its ability to better capture abrupt changes in the data.
+```{r}
 ggplot() +
   # Train data
   geom_point(data=train, aes(x = RDCHI, y = LC50), alpha = 0.5) +
@@ -146,11 +153,8 @@ ggplot() +
   geom_line(data=train, aes(x = RDCHI, y = predicted_LC50_spline), 
             color = "blue", linewidth = 1, alpha = 0.8) +
   labs(title = "Step Function vs Cubic Spline Regression", 
-       x = "RDCHI", 
-       y = "LC50") +
+       x = "RDCHI", y = "LC50") +
   theme_minimal()
-
-
 ```
 
 ### Task 5
@@ -171,7 +175,6 @@ plot(2:max_df, res, type = "l", xlab = "Degrees of freedom", ylab = "Cross-valid
 points(best_df, res[best_df], pch = 19, col = "red")
 legend("topright", legend = c(paste("Best df:", best_df, sep = "")), col = c("red"), pch = 19)
 ```
-
 We plot the data, the basis linear model and the chosen spline model with the best degrees of freedom.
 The model is chosen based on the minimum cross-validation score.
 ```{r}

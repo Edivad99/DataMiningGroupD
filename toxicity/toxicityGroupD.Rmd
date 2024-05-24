@@ -33,6 +33,7 @@ library(GGally)
 rm(list=ls())
 ```
 
+
 ## Data import
 ```{r}
 # Load the training data
@@ -321,6 +322,86 @@ ggplot(partial_effects_long, aes(x = Effect, y = LC50)) +
   geom_point() +
   facet_wrap(~ Predictor, scales = "free_x") +
   labs(title = "Partial Effects of Predictors on LC50 using smoothing splines",
+       x = "Partial Effect",
+       y = "LC50") +
+  theme_minimal()
+```
+
+### Regression Spline (similar to smoothing spline)
+```{r}
+# Check the number of unique values in each predictor
+sapply(train, function(x) length(unique(x)))
+
+# Fit a GAM model using Regression spline
+gam_model <- gam(LC50 ~ 
+                 s(TPSA, bs = "cr", k = 20) +
+                 s(SAacc, bs = "cr", k = 20) +
+                 s(H050, bs = "cr", k = 9) + 
+                 s(MLOGP, bs = "cr", k = 20) + 
+                 s(RDCHI, bs = "cr", k = 20) + 
+                 s(GATS1p, bs = "cr", k = 20) + 
+                 s(nN, bs = "cr", k = 9) + 
+                 s(C040, bs = "cr", k = 6),
+               data = train, method = "REML") #REML(Restricted Maximum Likelihood) to estimate the optimal amount of                                                    smoothing for each term in the model and avoid over fitting
+
+
+# Summary of the GAM model
+summary(gam_model)
+
+# Extract partial effects of each predictor
+partial_effects <- predict(gam_model, type = "terms", se.fit = TRUE)
+partial_effects_df <- as.data.frame(partial_effects$fit)
+colnames(partial_effects_df) <- gsub("\\.s\\(.*\\)", "", colnames(partial_effects_df))
+partial_effects_df$LC50 <- train$LC50
+
+# Convert the data to long format for ggplot
+partial_effects_long <- partial_effects_df %>%
+  pivot_longer(cols = -LC50, names_to = "Predictor", values_to = "Effect")
+
+# Plot the effects of each predictor using ggplot2
+ggplot(partial_effects_long, aes(x = Effect, y = LC50)) +
+  geom_point() +
+  facet_wrap(~ Predictor, scales = "free_x") +
+  labs(title = "Partial Effects of Predictors on LC50 using Regression Splines",
+       x = "Partial Effect",
+       y = "LC50") +
+  theme_minimal()
+```
+
+
+### Polynomial
+```{r}
+# Fit a GAM model using polynomial terms
+n = 3
+gam_model <- gam(LC50 ~ 
+                 poly(TPSA, n) +
+                 poly(SAacc, n) + 
+                 poly(H050, n) + 
+                 poly(MLOGP, n) + 
+                 poly(RDCHI, n) + 
+                 poly(GATS1p, n) + 
+                 poly(nN, n) + 
+                 poly(C040, n),
+               data = train, method = 'REML')#REML(Restricted Maximum Likelihood) to estimate the optimal amount of                                                    smoothing for each term in the model and avoid over fitting
+
+# Summary of the GAM model
+summary(gam_model)
+
+# Extract partial effects of each predictor
+partial_effects <- predict(gam_model, type = "terms", se.fit = TRUE)
+partial_effects_df <- as.data.frame(partial_effects$fit)
+colnames(partial_effects_df) <- gsub("\\.s\\(.*\\)", "", colnames(partial_effects_df))
+partial_effects_df$LC50 <- train$LC50
+
+# Convert the data to long format for ggplot
+partial_effects_long <- partial_effects_df %>%
+  pivot_longer(cols = -LC50, names_to = "Predictor", values_to = "Effect")
+
+# Plot the effects of each predictor using ggplot2
+ggplot(partial_effects_long, aes(x = Effect, y = LC50)) +
+  geom_point() +
+  facet_wrap(~ Predictor, scales = "free_x") +
+  labs(title = "Partial Effects of Predictors on LC50 using polynomial",
        x = "Partial Effect",
        y = "LC50") +
   theme_minimal()

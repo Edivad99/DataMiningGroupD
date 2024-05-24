@@ -188,6 +188,8 @@ legend("topright", legend=c("Linear", "Spline"), col=c("blue", "red"), lty=1)
 ```
 
 ### Task 6
+Natural cubic spline:
+GAM is fitted using natural cubic splines to predict LC50 based on various chemical descriptors. The model is tuned to handle predictors with fewer unique values by adjusting the number of knots. Partial effects of each predictor are extracted and visualized using scatter plots, providing insights into their individual contributions to the LC50 prediction. By adjusting the number of knots, the model captures the complexity of each predictor's contribution to the LC50 prediction, providing a detailed understanding of the data.
 ```{r}
 # Check the number of unique values in each predictor
 sapply(train, function(x) length(unique(x)))
@@ -222,6 +224,103 @@ ggplot(partial_effects_long, aes(x = Effect, y = LC50)) +
   geom_point() +
   facet_wrap(~ Predictor, scales = "free_x") +
   labs(title = "Partial Effects of Predictors on LC50 using natural cubic splines",
+       x = "Partial Effect",
+       y = "LC50") +
+  theme_minimal()
+
+```
+
+Step Function:
+A Generalized Additive Model (GAM) was fitted to predict LC50 using step functions
+The predictors are binned, and their partial effects are extracted and visualized using scatter plots. This approach allows for a flexible, non-linear relationship between the predictors and LC50, providing a more accurate representation of the data.
+
+```{r}
+# Check the number of unique values in each predictor
+unique_counts <- sapply(train, function(x) length(unique(x)))
+print(unique_counts)
+
+# Define the number of bins for each predictor
+bins <- list(TPSA = 10, SAacc = 10, H050 = 4, MLOGP = 10, RDCHI = 10, GATS1p = 10, nN = 4, C040 = 3)
+
+# Create binned predictors in the training set
+train_binned <- train %>%
+  mutate(across(names(bins), ~ cut(., breaks = bins[[cur_column()]], labels = FALSE)))
+
+# Fit a GAM model using step functions (categorical predictors)
+gam_model_step <- gam(LC50 ~ 
+                        factor(TPSA) + 
+                        factor(SAacc) + 
+                        factor(H050) + 
+                        factor(MLOGP) + 
+                        factor(RDCHI) + 
+                        factor(GATS1p) + 
+                        factor(nN) + 
+                        factor(C040),
+                      data = train_binned)
+
+# Summarize the model
+summary(gam_model_step)
+
+# Extract partial effects of each predictor
+partial_effects <- predict(gam_model_step, type = "terms", se.fit = TRUE)
+
+# Manually assign column names to partial effects dataframe
+partial_effects_df <- as.data.frame(partial_effects$fit)
+colnames(partial_effects_df) <- c("TPSA", "SAacc", "H050", "MLOGP", "RDCHI", "GATS1p", "nN", "C040")
+partial_effects_df$LC50 <- train$LC50
+
+# Print column names to ensure they are correct
+print(colnames(partial_effects_df))
+
+# Convert the data to long format for ggplot
+partial_effects_long <- partial_effects_df %>%
+  pivot_longer(cols = -LC50, names_to = "Predictor", values_to = "Effect")
+
+# Plot the effects of each predictor using ggplot2
+ggplot(partial_effects_long, aes(x = Effect, y = LC50)) +
+  geom_point() +
+  facet_wrap(~ Predictor, scales = "free_x") +
+  labs(title = "Partial Effects of Predictors on LC50 using Step Functions",
+       x = "Partial Effect",
+       y = "LC50") +
+  theme_minimal()
+```
+Smoothing splines:
+
+```{r}
+# Check the number of unique values in each predictor
+sapply(train, function(x) length(unique(x)))
+
+# Fit a GAM model using smoothing splines with reduced knots for each predictor
+gam_model <- gam(LC50 ~ 
+                   s(TPSA, bs = "cr", k = 20) +   # Less than 193
+                   s(SAacc, bs = "cr", k = 20) +  # Less than 182
+                   s(H050, bs = "cr", k = 9) +    # Less than 10
+                   s(MLOGP, bs = "cr", k = 20) +  # Less than 349 (k can be higher but 20 is reasonable)
+                   s(RDCHI, bs = "cr", k = 20) +  # Less than 297 (k can be higher but 20 is reasonable)
+                   s(GATS1p, bs = "cr", k = 20) + # Less than 349 (k can be higher but 20 is reasonable)
+                   s(nN, bs = "cr", k = 9) +      # Less than 9
+                   s(C040, bs = "cr", k = 6),     # Less than 6
+                 data = train)
+
+# Summarize the model
+summary(gam_model)
+
+# Extract partial effects of each predictor
+partial_effects <- predict(gam_model, type = "terms", se.fit = TRUE)
+partial_effects_df <- as.data.frame(partial_effects$fit)
+colnames(partial_effects_df) <- gsub("\\.s\\(.*\\)", "", colnames(partial_effects_df))
+partial_effects_df$LC50 <- train$LC50
+
+# Convert the data to long format for ggplot
+partial_effects_long <- partial_effects_df %>%
+  pivot_longer(cols = -LC50, names_to = "Predictor", values_to = "Effect")
+
+# Plot the effects of each predictor using ggplot2
+ggplot(partial_effects_long, aes(x = Effect, y = LC50)) +
+  geom_point() +
+  facet_wrap(~ Predictor, scales = "free_x") +
+  labs(title = "Partial Effects of Predictors on LC50 using smoothing splines",
        x = "Partial Effect",
        y = "LC50") +
   theme_minimal()

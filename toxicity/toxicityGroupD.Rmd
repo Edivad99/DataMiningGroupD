@@ -123,7 +123,7 @@ str(train)
 model_step <- train(step_model_formula, data = train, method = "lm", trControl = ctrl)
 model_spline <- train(spline_model_formula, data = train, method = "lm", trControl = ctrl)
 
-summary(model_spline)
+#summary(model_spline)
 
 
 # Predicting
@@ -154,20 +154,19 @@ ggplot() +
 ```
 
 ### Task 5
-First, we need to find the best degrees of freedom for the model. We use the cross-validation score to find the best degrees of freedom.
+First, we need to find the best degrees of freedom for the model. We use the cross-validation score to find the best degrees of freedom. In particular we use PRESS (PREdiction Sum of Squares) as the cross-validation score.
 ```{r}
 max_df = 30
 res <- list()
 for (i in 2:max_df) {
   spline <- smooth.spline(train$RDCHI, train$LC50, df = i)
-  # The CV score is often called “PRESS” (and labeled on print()), for 'PREdiction Sum of Squares'.
   # print(paste("df:", i, "Cross-validation score:", spline$cv.crit))
   res <- c(res, spline$cv.crit)
 }
 best_df <- which.min(res)
 ```
 We plot the degrees of freedom on the x-axis and the cross-validation score on the y-axis. The best model is chosen based on the minimum cross-validation score.
-```{r}
+```{r echo=FALSE}
 plot(2:max_df, res, type = "l", xlab = "Degrees of freedom", ylab = "Cross-validation score")
 points(best_df, res[best_df], pch = 19, col = "red")
 legend("topright", legend = c(paste("Best df:", best_df, sep = "")), col = c("red"), pch = 19)

@@ -45,16 +45,23 @@ set.seed(123)
 
 ## Data Visualization
 ```{r}
+summary(train)
 
 ggpairs(train,
         upper = list(continuous = wrap("cor", size = 2.5, color = "blue")),
   lower = list(continuous = wrap("points", size = 0.8, alpha = 0.7, color = "red")),
   diag = list(continuous = wrap("densityDiag", fill = "lightblue", alpha = 0.7)),
   axisLabels = "show")
+```
+By looking the diagonal, it appears that the feature `LC50`, `MLOGP` and `RDCHI` follow a normal distribution, while the others features has a tail.
+```{r}
 #TODO what's going on
 ggplot(train, aes(x =nN, y=LC50)) + geom_point() + theme_minimal()
 ggplot(train, aes(x =H050, y=LC50)) + geom_point() + theme_minimal()
 ggplot(train, aes(x =C040, y=LC50)) + geom_point() + theme_minimal()
+
+# Seams like there is a linear relationship between LC50 and MLOGP
+ggplot(train, aes(x =MLOGP, y=LC50)) + geom_point() + theme_minimal()
 ```
 
 ### Task 3

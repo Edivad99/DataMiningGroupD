@@ -53,14 +53,10 @@ ggpairs(train,
   diag = list(continuous = wrap("densityDiag", fill = "lightblue", alpha = 0.7)),
   axisLabels = "show")
 ```
-By looking the diagonal, it appears that the feature `LC50`, `MLOGP` and `RDCHI` follow a normal distribution, while the others features has a tail.
-```{r}
-#TODO what's going on
-ggplot(train, aes(x =nN, y=LC50)) + geom_point() + theme_minimal()
-ggplot(train, aes(x =H050, y=LC50)) + geom_point() + theme_minimal()
-ggplot(train, aes(x =C040, y=LC50)) + geom_point() + theme_minimal()
+By looking at the diagonal, it appears that the features `LC50`, `MLOGP` and `RDCHI` follow a normal distribution, while the others features has a tail; also, we can see that H050, c040 and nN have discrete values. 
+Looking at the upper side of the plot, we see correlation values for each feature. MLOGP is the most correlated with LC50, as we can see from the scatterplot down here. Moreover, in this dataseta there aren't any highly correlated features, so it's not recommended to discard any of them.
 
-# Seams like there is a linear relationship between LC50 and MLOGP
+```{r}
 ggplot(train, aes(x =MLOGP, y=LC50)) + geom_point() + theme_minimal()
 ```
 

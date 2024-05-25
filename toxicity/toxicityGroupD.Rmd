@@ -1,7 +1,7 @@
 ---
-title: "Toxicity TApp Group D"
+title: "Toxicity TApp"
 author: "Group D"
-date: "2024-045-22"
+date: "2024-05-22"
 output:
   html_document:
     df_print: paged
@@ -163,6 +163,12 @@ ggplot() +
   labs(title = "Step Function vs Cubic Spline Regression", 
        x = "RDCHI", y = "LC50") +
   theme_minimal()
+```
+
+```{r include=FALSE}
+train$predicted_LC50_spline <- NULL
+train$predicted_LC50_step <- NULL
+train$RDCHI_step <- NULL
 ```
 
 ### Task 5

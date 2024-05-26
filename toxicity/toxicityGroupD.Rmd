@@ -416,8 +416,17 @@ ggplot(partial_effects_long, aes(x = Effect, y = LC50)) +
   theme_minimal()
 ```
 ```{r}
-spline <- smooth.spline(train$RDCHI, train$LC50, df=which.min(res))
-yhat <- predict(spline, newdata = test)
+model <- gam(LC50 ~ 
+                   s(TPSA, bs = "cr", k = 20) +   # Less than 193
+                   s(SAacc, bs = "cr", k = 20) +  # Less than 182
+                   s(H050, bs = "cr", k = 9) +    # Less than 10
+                   s(MLOGP, bs = "cr", k = 20) +  # Less than 349 (k can be higher but 20 is reasonable)
+                   s(RDCHI, bs = "cr", k = 20) +  # Less than 297 (k can be higher but 20 is reasonable)
+                   s(GATS1p, bs = "cr", k = 20) + # Less than 349 (k can be higher but 20 is reasonable)
+                   s(nN, bs = "cr", k = 9) +      # Less than 9
+                   s(C040, bs = "cr", k = 6),     # Less than 6
+                 data = train)
+yhat <- predict(model, newdata = test)
 summary(yhat)
 yhat <- unlist(yhat)
 write.table(file="mySubmission.txt", pmax(0, yhat), row.names = FALSE,col.names = FALSE)

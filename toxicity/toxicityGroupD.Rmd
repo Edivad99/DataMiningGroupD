@@ -419,5 +419,6 @@ ggplot(partial_effects_long, aes(x = Effect, y = LC50)) +
 spline <- smooth.spline(train$RDCHI, train$LC50, df=which.min(res))
 yhat <- predict(spline, newdata = test)
 summary(yhat)
+yhat <- unlist(yhat)
 write.table(file="mySubmission.txt", pmax(0, yhat), row.names = FALSE,col.names = FALSE)
 ```

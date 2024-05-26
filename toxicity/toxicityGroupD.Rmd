@@ -429,5 +429,5 @@ model <- gam(LC50 ~
 yhat <- predict(model, newdata = test)
 summary(yhat)
 yhat <- unlist(yhat)
-write.table(file="mySubmission.txt", pmax(0, yhat), row.names = FALSE,col.names = FALSE)
+write.table(file="mySubmission.txt", yhat, row.names = FALSE,col.names = FALSE)
 ```

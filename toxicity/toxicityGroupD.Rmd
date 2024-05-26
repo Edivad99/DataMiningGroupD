@@ -415,17 +415,18 @@ ggplot(partial_effects_long, aes(x = Effect, y = LC50)) +
        y = "LC50") +
   theme_minimal()
 ```
+Based on R-sq. result, regression spline model is the best model for this dataset.
 ```{r}
-model <- gam(LC50 ~ 
-                   s(TPSA, bs = "cr", k = 20) +   # Less than 193
-                   s(SAacc, bs = "cr", k = 20) +  # Less than 182
-                   s(H050, bs = "cr", k = 9) +    # Less than 10
-                   s(MLOGP, bs = "cr", k = 20) +  # Less than 349 (k can be higher but 20 is reasonable)
-                   s(RDCHI, bs = "cr", k = 20) +  # Less than 297 (k can be higher but 20 is reasonable)
-                   s(GATS1p, bs = "cr", k = 20) + # Less than 349 (k can be higher but 20 is reasonable)
-                   s(nN, bs = "cr", k = 9) +      # Less than 9
-                   s(C040, bs = "cr", k = 6),     # Less than 6
-                 data = train)
+model <- gam_model <- gam(LC50 ~ 
+                 s(TPSA, bs = "cr", k = 20) +
+                 s(SAacc, bs = "cr", k = 20) +
+                 s(H050, bs = "cr", k = 9) + 
+                 s(MLOGP, bs = "cr", k = 20) + 
+                 s(RDCHI, bs = "cr", k = 20) + 
+                 s(GATS1p, bs = "cr", k = 20) + 
+                 s(nN, bs = "cr", k = 9) + 
+                 s(C040, bs = "cr", k = 6),
+               data = train, method = "REML")
 yhat <- predict(model, newdata = test)
 summary(yhat)
 yhat <- unlist(yhat)

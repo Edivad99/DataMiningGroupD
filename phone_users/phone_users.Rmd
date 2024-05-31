@@ -429,7 +429,11 @@ marsDf$y_binary <- NULL
 
 # Train a MARS model with bagEarthGCV using Caret
 # Grid search for the best degree
-mars_model <- caret::train(y ~ ., data = marsDf, method = "gcvEarth", trControl = trainControl(method = "cv", number = 10), tuneGrid = data.frame(degree = 1:5))
+mars_model <- caret::train(y ~ ., data = marsDf, method = "gcvEarth", trControl = trainControl(method = "cv", number = 10), tuneGrid = data.frame(degree = 1:10))
+
+# Use FwStepSel$call$formula
+#mars_model <- caret::train(FwStepSel$call$formula, data = marsDf, method = "gcvEarth", trControl = trainControl(method = "cv", number = 10), tuneGrid = data.frame(degree = 1:5))
+
 summary(mars_model)
 # Visualize the MARS model
 plot(mars_model)

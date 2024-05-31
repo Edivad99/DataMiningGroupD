@@ -304,8 +304,6 @@ We now build a logistic regression model to predict whether a customer has a pos
 # Create a new binary response variable. 1 if the customer has more than 0 minutes of outgoing calls, 0 otherwise
 train$y_binary <- factor(ifelse(train$y > 0, 1, 0), levels = c(0, 1))
 
-
-
 # Split the data into training and testing sets
 set.seed(1234)
 train_index <- createDataPartition(train$y_binary, p = 0.7, list = FALSE)
@@ -329,12 +327,66 @@ par(mfrow=c(1,2))
 barplot(table(train$y_binary), main = "TRAIN: Number of call with positive and zero dur.", xlab = "Positive duration", ylab = "Frequency")
 barplot(table(glm.yhat), main = "PREDICTED: Number of call with positive and zero dur.", xlab = "Positive duration", ylab = "Frequency")
 
-
 # Calculate the accuracy of the model with confusion matrix
 confusion_matrix <- confusionMatrix(glm.yhat, glm.test$y_binary)
 confusion_matrix$overall["Accuracy"]
 
 ```
+Same thing but with decision tree. Accuracy is improved.
+
+```{r}
+library(tree)
+# Create a new binary response variable. 1 if the customer has more than 0 minutes of outgoing calls, 0 otherwise
+train$y_binary <- factor(ifelse(train$y > 0, 1, 0), levels = c(0, 1))
+
+# Split the data into training and testing sets
+set.seed(1234)
+train_index <- createDataPartition(train$y_binary, p = 0.7, list = FALSE)
+tree.train <- train[train_index, ]
+tree.test <- train[-train_index, ]
+
+# Remove y from the training and testing sets to avoid using it as a predictor
+tree.train$y <- NULL
+tree.test$y <- NULL
+
+# Fit a regression tree on all the features with a very small pruning level
+rTreeFit <- tree(y_binary ~ ., data = tree.train, control = tree.control(nobs = nrow(train), mindev = 0.001))
+
+# Plot the tree
+summary(rTreeFit)
+plot(rTreeFit)
+text(rTreeFit, pretty = 0)
+
+# Cross-validation to find the optimal pruning level using the deviance
+rTreeCv <- cv.tree(rTreeFit, method = "deviance")
+plot(rTreeCv$size, rTreeCv$dev, type = "b", xlab = "Tree Size", ylab = "Deviance", main = "Pruning VS Deviance Plot")
+
+# Prune the tree to the optimal level
+prunedTree <- prune.tree(rTreeFit, best = 6)
+
+# Plot the final pruned tree
+summary(prunedTree)
+plot(prunedTree)
+text(prunedTree, pretty = 1)
+
+# Predictions on the test set
+tree.yhat <- predict(prunedTree, newdata = tree.test, type = "class")
+
+# Plot the number of positive duration both in general and in the training and test sets
+par(mfrow=c(1,2))
+barplot(table(train$y_binary), main = "TRAIN: Number of call with positive and zero dur.", xlab = "Positive duration", ylab = "Frequency")
+barplot(table(tree.yhat ), main = "PREDICTED: Number of call with positive and zero dur.", xlab = "Positive duration", ylab = "Frequency")
+
+# Calculate the accuracy of the model with confusion matrix
+confusion_matrix <- confusionMatrix(tree.yhat, tree.test$y_binary)
+confusion_matrix$overall["Accuracy"]
+
+```
+
+
+
+
+
 
 
 

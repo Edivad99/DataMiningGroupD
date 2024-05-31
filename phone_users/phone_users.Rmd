@@ -10,6 +10,7 @@ output: html_document
 library("caret")
 library("Metrics")
 library("corrplot")
+library("earth")
 set.seed(1234)
 ```
 
@@ -416,12 +417,24 @@ Train a model on samples with the response different from 0
 
 
 combinedModel <- function(row) {
-  y = predict(prunedTree, newdata = sample, type = "response")
-  y
+  y = predict(prunedTree, newdata = sample, type = "class")
+  # If the prediction outcome is no traffic, return 0
+  if(y == 0)
+    as.numeric(0)
+  # else return predicted value using regression
+  else
+    predict(mars_model, newdata = sample)
+    
 }
 
-sample = train[3, ]
+sample = train[9, , drop = FALSE]
+sample$y = NULL
 combinedModel(sample)
+
+
+# Predict all values of test set
+yhat = apply(test, 1, combinedModel)
+write.table(file="mySubmission.txt", pmax(0, yhat), row.names = FALSE,col.names = FALSE)
 
 
 ```

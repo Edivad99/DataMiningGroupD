@@ -11,6 +11,8 @@ library("caret")
 library("Metrics")
 library("corrplot")
 library("earth")
+library("tree")
+
 set.seed(1234)
 ```
 
@@ -306,7 +308,6 @@ We now build a logistic regression model to predict whether a customer has a pos
 train$y_binary <- factor(ifelse(train$y > 0, 1, 0), levels = c(0, 1))
 
 # Split the data into training and testing sets
-set.seed(1234)
 train_index <- createDataPartition(train$y_binary, p = 0.7, list = FALSE)
 glm.train <- train[train_index, ]
 glm.test <- train[-train_index, ]
@@ -317,6 +318,8 @@ glm.test$y <- NULL
 
 # Train a logistic regression model
 # Since the binary response depends only on the actual call traffic, we remove the other variables that are not related to the call traffic 
+#logistic_model <- glm(y_binary ~ . -tariff.plan -vas1 -vas2 -sex -age -activation.zone -activation.channel -payment.method, data = glm.train, family = "binomial")
+
 logistic_model <- glm(y_binary ~ . -tariff.plan -vas1 -vas2 -sex -age -activation.zone -activation.channel -payment.method, data = glm.train, family = "binomial")
 
 # Test the model on the testing set
@@ -336,22 +339,19 @@ confusion_matrix$overall["Accuracy"]
 Same thing but with decision tree. Accuracy is improved.
 
 ```{r}
-library(tree)
-set.seed(1234)
-
 treeDf <- train
 # Create a new binary response variable. 1 if the customer has more than 0 minutes of outgoing calls, 0 otherwise
 treeDf$y_binary <- factor(ifelse(train$y > 0, 1, 0), levels = c(0, 1))
-# Remove y from the training and testing sets to avoid using it as a predictor
+# Remove y to avoid using it as a predictor
 treeDf$y <- NULL
 
 # Split the data into training and testing sets
 train_index <- createDataPartition(treeDf$y_binary, p = 0.7, list = FALSE)
-tree.train <- train[train_index, ]
-tree.test <- train[-train_index, ]
+treeDf.train <- treeDf[train_index, ]
+treeDf.test <- treeDf[-train_index, ]
 
 # Fit a regression tree on all the features with a very small pruning level
-rTreeFit <- tree(y_binary ~ ., data = tree.train, control = tree.control(nobs = nrow(train), mindev = 0.001))
+rTreeFit <- tree(y_binary ~ ., data = treeDf.train, control = tree.control(nobs = nrow(treeDf), mindev = 0.002))
 
 # Plot the tree
 summary(rTreeFit)
@@ -371,24 +371,57 @@ plot(prunedTree)
 text(prunedTree, pretty = 1)
 
 # Predictions on the test set
-tree.yhat <- predict(prunedTree, newdata = tree.test, type = "class")
+treeDf.yhat <- predict(prunedTree, newdata = treeDf.test, type = "class")
 
 # Plot the number of positive duration both in general and in the training and test sets
 par(mfrow=c(1,2))
-barplot(table(train$y_binary), main = "TRAIN: Number of call with positive and zero dur.", xlab = "Positive duration", ylab = "Frequency")
-barplot(table(tree.yhat ), main = "PREDICTED: Number of call with positive and zero dur.", xlab = "Positive duration", ylab = "Frequency")
+barplot(table(treeDf.train$y_binary), main = "TRAIN: Number of call with positive and zero dur.", xlab = "Positive duration", ylab = "Frequency")
+barplot(table(treeDf.yhat ), main = "PREDICTED: Number of call with positive and zero dur.", xlab = "Positive duration", ylab = "Frequency")
 
 # Calculate the accuracy of the model with confusion matrix
-confusion_matrix <- confusionMatrix(tree.yhat, tree.test$y_binary)
+confusion_matrix <- confusionMatrix(treeDf.yhat, treeDf.test$y_binary)
 confusion_matrix$overall["Accuracy"]
 
 # Fit the tree on the whole dataset
 rTreeFit <- tree(y_binary ~ ., data = treeDf, control = tree.control(nobs = nrow(train), mindev = 0.001))
 prunedTree <- prune.tree(rTreeFit, best = 6)
+plot(prunedTree)
+text(prunedTree, pretty = 1)
+```
+
+Same thing but with random forest. Accuracy is improved.
+```{r}
+rfDf <- train
+# Create a new binary response variable. 1 if the customer has more than 0 minutes of outgoing calls, 0 otherwise
+rfDf$y_binary <- factor(ifelse(train$y > 0, 1, 0), levels = c(0, 1))
+# Remove y to avoid using it as a predictor
+rfDf$y <- NULL
+
+# Split the data into training and testing sets
+train_index <- createDataPartition(rfDf$y_binary, p = 0.7, list = FALSE)
+rfDf.train <- rfDf[train_index, ]
+rfDf.test <- rfDf[-train_index, ]
+
+# Fit a random forest model
+rfFit <- caret::train(y_binary ~ ., data = rfDf.train, method = "rf", trControl = trainControl(method = "cv", number = 5), preProcess = c("center", "scale"), mttry = 60)
+
+# Predictions on the test set
+rfDf.yhat <- predict(rfFit, newdata = rfDf.test)
+
+# Plot the number of positive duration both in general and in the training and test sets
+par(mfrow=c(1,2))
+barplot(table(rfDf.train$y_binary), main = "TRAIN: Number of call with positive and zero dur.", xlab = "Positive duration", ylab = "Frequency")
+barplot(table(rfDf.yhat), main = "PREDICTED: Number of call with positive and zero dur.", xlab = "Positive duration", ylab = "Frequency")
+
+# Calculate the accuracy of the model with confusion matrix
+confusion_matrix <- confusionMatrix(rfDf.yhat, rfDf.test$y_binary)
+confusion_matrix$overall["Accuracy"]
 
 ```
 
-Train a model on samples with the response different from 0
+
+
+Train a model on samples with the response different from 0 (MARS)
 ```{r}
 # Create a new data frame with all 
 marsDf <- train[train$y > 0, ]
@@ -403,7 +436,17 @@ plot(mars_model)
 
 # Get the best model
 best_mars_model <- mars_model$finalModel
+```
 
+Train a model on samples with the response different from 0 (LINEAR)
+```{r}
+# Create a new data frame with all 
+lmDf <- train[train$y > 0, ]
+lmDf$y_binary <- NULL
+
+# Train a linear model with with caret
+lm_model <- caret::train(y ~ ., data = lmDf, method = "lm", trControl = trainControl(method = "cv", number = 10))
+summary(lm_model)
 ```
 
 
@@ -413,16 +456,16 @@ Train a model on samples with the response different from 0
 # First, apply the tree model to get the outcome. If the outcome is different from zero, apply the regression model to get the final response
 
 combinedModel <- function(row) {
-  y = predict(prunedTree, newdata = row, type = "class")
+  y = predict(rfFit, newdata = row, type = "raw")
   # If the prediction outcome is no traffic, return 0
   if(y == 0)
     as.numeric(0)
   # else return predicted value using regression
   else
     predict(mars_model, newdata = row)
-    
 }
 
+yhat <- rep(0, nrow(test))
 # Predict all values of test set
 for(i in 1:nrow(test)) {
   testRow <- test[i, ]

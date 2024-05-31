@@ -383,10 +383,48 @@ confusion_matrix$overall["Accuracy"]
 
 ```
 
+Train a model on samples with the response different from 0
+```{r}
+# Create a new data frame with all 
+noZeroDf <- train[train$y > 0, ]
+
+# Split the data into training and testing sets
+set.seed(1234)
+
+train_index <- createDataPartition(noZeroDf$y, p = 0.7, list = FALSE)
+no_zero_train <- noZeroDf[train_index, ]
+no_zero_test <- noZeroDf[-train_index, ]
 
 
+# Train a MARS model with bagEarthGCV using Caret
+# Grid search for the best degree
+mars_model <- caret::train(y ~ ., data = no_zero_train, method = "gcvEarth", trControl = trainControl(method = "cv", number = 10), tuneGrid = data.frame(degree = 1:5))
+summary(mars_model)
+# Visualize the MARS model
+plot(mars_model)
+
+# Get the best model
+best_mars_model <- mars_model$finalModel
+
+```
 
 
+Train a model on samples with the response different from 0
+```{r}
+# Custom model to predict the minutes of outgoing calls for customers
+# First, apply the tree model to get the outcome. If the outcome is different from zero, apply the regression model to get the final response
+
+
+combinedModel <- function(row) {
+  y = predict(prunedTree, newdata = sample, type = "response")
+  y
+}
+
+sample = train[3, ]
+combinedModel(sample)
+
+
+```
 
 
 

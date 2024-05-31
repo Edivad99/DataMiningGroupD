@@ -337,18 +337,18 @@ Same thing but with decision tree. Accuracy is improved.
 
 ```{r}
 library(tree)
+set.seed(1234)
+
+treeDf <- train
 # Create a new binary response variable. 1 if the customer has more than 0 minutes of outgoing calls, 0 otherwise
-train$y_binary <- factor(ifelse(train$y > 0, 1, 0), levels = c(0, 1))
+treeDf$y_binary <- factor(ifelse(train$y > 0, 1, 0), levels = c(0, 1))
+# Remove y from the training and testing sets to avoid using it as a predictor
+treeDf$y <- NULL
 
 # Split the data into training and testing sets
-set.seed(1234)
-train_index <- createDataPartition(train$y_binary, p = 0.7, list = FALSE)
+train_index <- createDataPartition(treeDf$y_binary, p = 0.7, list = FALSE)
 tree.train <- train[train_index, ]
 tree.test <- train[-train_index, ]
-
-# Remove y from the training and testing sets to avoid using it as a predictor
-tree.train$y <- NULL
-tree.test$y <- NULL
 
 # Fit a regression tree on all the features with a very small pruning level
 rTreeFit <- tree(y_binary ~ ., data = tree.train, control = tree.control(nobs = nrow(train), mindev = 0.001))
@@ -382,24 +382,21 @@ barplot(table(tree.yhat ), main = "PREDICTED: Number of call with positive and z
 confusion_matrix <- confusionMatrix(tree.yhat, tree.test$y_binary)
 confusion_matrix$overall["Accuracy"]
 
+# Fit the tree on the whole dataset
+rTreeFit <- tree(y_binary ~ ., data = treeDf, control = tree.control(nobs = nrow(train), mindev = 0.001))
+prunedTree <- prune.tree(rTreeFit, best = 6)
+
 ```
 
 Train a model on samples with the response different from 0
 ```{r}
 # Create a new data frame with all 
-noZeroDf <- train[train$y > 0, ]
-
-# Split the data into training and testing sets
-set.seed(1234)
-
-train_index <- createDataPartition(noZeroDf$y, p = 0.7, list = FALSE)
-no_zero_train <- noZeroDf[train_index, ]
-no_zero_test <- noZeroDf[-train_index, ]
-
+marsDf <- train[train$y > 0, ]
+marsDf$y_binary <- NULL
 
 # Train a MARS model with bagEarthGCV using Caret
 # Grid search for the best degree
-mars_model <- caret::train(y ~ ., data = no_zero_train, method = "gcvEarth", trControl = trainControl(method = "cv", number = 10), tuneGrid = data.frame(degree = 1:5))
+mars_model <- caret::train(y ~ ., data = marsDf, method = "gcvEarth", trControl = trainControl(method = "cv", number = 10), tuneGrid = data.frame(degree = 1:5))
 summary(mars_model)
 # Visualize the MARS model
 plot(mars_model)
@@ -415,25 +412,24 @@ Train a model on samples with the response different from 0
 # Custom model to predict the minutes of outgoing calls for customers
 # First, apply the tree model to get the outcome. If the outcome is different from zero, apply the regression model to get the final response
 
-
 combinedModel <- function(row) {
-  y = predict(prunedTree, newdata = sample, type = "class")
+  y = predict(prunedTree, newdata = row, type = "class")
   # If the prediction outcome is no traffic, return 0
   if(y == 0)
     as.numeric(0)
   # else return predicted value using regression
   else
-    predict(mars_model, newdata = sample)
+    predict(mars_model, newdata = row)
     
 }
 
-sample = train[9, , drop = FALSE]
-sample$y = NULL
-combinedModel(sample)
-
-
 # Predict all values of test set
-yhat = apply(test, 1, combinedModel)
+for(i in 1:nrow(test)) {
+  testRow <- test[i, ]
+  yhat[i] <- combinedModel(testRow)
+}
+
+
 write.table(file="mySubmission.txt", pmax(0, yhat), row.names = FALSE,col.names = FALSE)
 
 

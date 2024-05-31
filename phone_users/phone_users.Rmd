@@ -26,13 +26,13 @@ train$tariff.plan <- as.factor(ifelse(train$tariff.plan <= 6, 1, train$tariff.pl
 train$vas1 <- as.factor(train$vas1)
 train$vas2 <- as.factor(train$vas2)
 
-# test$sex <- as.factor(test$sex)
-# test$payment.method <- as.factor(test$payment.method)
-# test$activation.zone <- as.factor(ifelse(test$activation.zone == 0, 1, test$activation.zone))
-# test$activation.channel <- as.factor(ifelse(test$activation.channel==5, 1, 0)) #Merge
-# test$tariff.plan <- as.factor(ifelse(test$tariff.plan <= 6, 1, test$tariff.plan)) #Merge
-# test$vas1 <- as.factor(test$vas1)
-# test$vas2 <- as.factor(test$vas2)
+test$sex <- as.factor(test$sex)
+test$payment.method <- as.factor(test$payment.method)
+test$activation.zone <- as.factor(ifelse(test$activation.zone == 0, 1, test$activation.zone))
+test$activation.channel <- as.factor(ifelse(test$activation.channel==5, 1, 0)) #Merge
+test$tariff.plan <- as.factor(ifelse(test$tariff.plan <= 6, 1, test$tariff.plan)) #Merge
+test$vas1 <- as.factor(test$vas1)
+test$vas2 <- as.factor(test$vas2)
 ```
 
 ```{r}
@@ -171,8 +171,112 @@ yhat <- predict(rf_model, newdata=test)
 ```
 
 ```{r}
+library(parallel) 
+no_cores <- 6
+library(doParallel)
+
+cl <- makePSOCKcluster(no_cores)
+registerDoParallel(cl)
+# Define a grid of mtry values to search over
+tuneGrid <- expand.grid(mtry = seq(1, ncol(train) - 1, by = 1))
+
+# Set up cross-validation control
+#rForestCtrl <- trainControl(method = "cv", number = 5, search = "grid")
+
+# Train the model with the tuning grid
+rForestFit <- train(y ~ ., data = train, method = "rf", preProcess = c("center", "scale"), tuneGrid = tuneGrid, allowParallel = TRUE)
+
+# Get the importance of each feature and plot it
+importance <- importance(rForestFit$finalModel)
+varImpPlot(rForestFit$finalModel)
+
+# Predict the quality of the test set
+yhat = predict(rForestFit, newdata = test)
+
+# Get the final mtry value
+rForestFit$finalModel$mtry
+```
+
+MARS
+```{r}
+# Train a MARS model with bagEarthGCV using Caret
+# Grid search for the best degree
+mars_model <- caret::train(y ~ ., data = train, method = "gcvEarth", trControl = trainControl(method = "cv", number = 10), tuneGrid = data.frame(degree = 1:3))
+summary(mars_model)
+# Visualize the MARS model
+plot(mars_model)
+
+# Predict the quality of the test set
+yhat = predict(mars_model, newdata = test)
+write.table(file="mySubmission.txt", pmax(0, yhat), row.names = FALSE,col.names = FALSE)
+
+```
+```{r}
 #fit <- lm(y ~ . , data=train)
 #summary(fit)
 #yhat <- predict(fit, newdata=test)
 write.table(file="mySubmission.txt", pmax(0, yhat), row.names = FALSE,col.names = FALSE)
 ```
+
+--------------------------------------------------------------------------------------
+NEW WORK BY DIVING FOR CALLS WITH ZERO MINUTES AND POSITIVE ONES
+
+We turn our attention to the training dataset. The initial graphic descriptive analysis reveals that the response variable is greatly skewed around zero. Specifically, there are many customers in the training data who did not had outgoing calls. This characteristic of the data causes some complications when automatically applying regression models. The response variable cannot be considered continuous due to its mixed variable traits:
+- a continuous element is present for some observations, which corresponds to the minutes of outgoing calls made by the customers.
+- a discrete binary component is found with the group of customers that didn't make any calls within that particular month.
+
+The following histograms show the distribution of the minutes of outgoing calls for all customers and for customers with more than 0 minutes of outgoing calls.
+
+```{r}
+# Histogram of minutes of outgoing calls
+hist(train$y, breaks = 10000, main = "Histogram of minutes of outgoing calls", xlab = "Minutes of outgoing calls", xlim = c(0, 1000))
+
+# Histogram of minutes of outgoing calls for customers with more than 0 minutes
+hist(train$y[train$y > 0], breaks = 10000, main = "Histogram of minutes of outgoing calls for customers with more than 0 minutes", xlab = "Minutes of outgoing calls", xlim = c(0, 1000))
+```
+
+We now build a logistic regression model to predict whether a customer has a positive number of minutes of outgoing calls. With this model, we aim to predict the binary response variable y_binary, which is 1 if the customer has more than 0 minutes of outgoing calls and 0 otherwise. We split the training data into training and testing sets, train the logistic regression model on the training set, and test the model on the testing set. We calculate the accuracy of the model on the testing set. If the models predicts that a user has more than 0 minutes of outgoing calls, we will predict the mean of the minutes of outgoing calls for that user by using a regression model.
+
+```{r}
+# Create a new binary response variable. 1 if the customer has more than 0 minutes of outgoing calls, 0 otherwise
+train$y_binary <- factor(ifelse(train$y > 0, 1, 0), levels = c(0, 1))
+
+
+
+# Split the data into training and testing sets
+set.seed(1234)
+train_index <- createDataPartition(train$y_binary, p = 0.7, list = FALSE)
+glm.train <- train[train_index, ]
+glm.test <- train[-train_index, ]
+
+# Remove y from the training and testing sets to avoid using it as a predictor
+glm.train$y <- NULL
+glm.test$y <- NULL
+
+# Train a logistic regression model
+# Since the binary response depends only on the actual call traffic, we remove the other variables that are not related to the call traffic 
+logistic_model <- glm(y_binary ~ . -tariff.plan -vas1 -vas2 -sex -age -activation.zone -activation.channel -payment.method, data = glm.train, family = "binomial")
+
+# Test the model on the testing set
+glm.yhat <- predict(logistic_model, newdata = glm.test, type = "response")
+glm.yhat <- factor(ifelse(glm.yhat > 0.5, 1, 0), levels = c(0, 1))
+
+# Plot the number of positive duration both in general and in the training and test sets
+par(mfrow=c(1,2))
+barplot(table(train$y_binary), main = "TRAIN: Number of call with positive and zero dur.", xlab = "Positive duration", ylab = "Frequency")
+barplot(table(glm.yhat), main = "PREDICTED: Number of call with positive and zero dur.", xlab = "Positive duration", ylab = "Frequency")
+
+
+# Calculate the accuracy of the model with confusion matrix
+confusion_matrix <- confusionMatrix(glm.yhat, glm.test$y_binary)
+confusion_matrix$overall["Accuracy"]
+
+```
+
+
+
+
+
+
+
+

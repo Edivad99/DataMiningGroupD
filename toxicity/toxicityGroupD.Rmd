@@ -1,0 +1,434 @@
+---
+title: "Toxicity TApp"
+author: "Group D"
+date: "2024-05-22"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+- **Davide Albiero** davide.albiero@studenti.unipd.it
+- **Nazanin Ghorbani** nazanin.ghorbani@studenti.unipd.it
+- **Raman Yudzeshka** raman.yudzeshka@studenti.unipd.it
+- **Niccolò Zenaro** niccolo.zenaro@studenti.unipd.it
+- **Luca Marchiori** luca.marchiori.3@studenti.unipd.it
+- **Mohammad Khosravi** mohammad.khosravi.1@studenti.unipd.it
+
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+```{r include=FALSE}
+# Load libraries
+library(caret)
+library(ggplot2)
+library(corrplot)
+library(mgcv)
+library(tidyr)
+library(dplyr)
+library(ISLR2)
+library(GGally)
+#Clear the workspace
+rm(list=ls())
+```
+
+
+## Data import
+```{r}
+# Load the training data
+train <- read.csv("toxicity_train.csv", stringsAsFactors=F)
+# Load the test data
+test <- read.csv("toxicity_validation.csv", stringsAsFactors=F)
+set.seed(123)
+```
+
+## Data Visualization
+```{r}
+summary(train)
+
+ggpairs(train,
+        upper = list(continuous = wrap("cor", size = 2.5, color = "blue")),
+  lower = list(continuous = wrap("points", size = 0.8, alpha = 0.7, color = "red")),
+  diag = list(continuous = wrap("densityDiag", fill = "lightblue", alpha = 0.7)),
+  axisLabels = "show")
+```
+By looking at the diagonal, it appears that the features `LC50`, `MLOGP` and `RDCHI` follow a normal distribution, while the others features has a tail; also, we can see that `H050`, `C040` and `nN` have discrete values. 
+Looking at the upper side of the plot, we see correlation values for each feature. `MLOGP` is the most correlated with `LC50`, as we can see from the scatterplot down here. Moreover, in this dataset there aren't any highly correlated features, so it's not recommended to discard any of them.
+
+```{r}
+ggplot(train, aes(x =MLOGP, y=LC50)) + geom_point() + theme_minimal()
+```
+
+### Task 3
+
+For this task, we train the model multiple times by increasing at each train the polynomial degree (from 1 to 5). The RMSE of each model is calculated after the cross-validation. The cross validation is used to ensure that the calculated RMSE is a good quality and not biased measure.
+
+The results show that the 2-degree polynomial is the one with the lowest RMSE. A plot that compares the RMSE and the degree of polynomial is shown. In the end we also plot the final model function on the data scatterplot.
+```{r}
+# Train a model by trying multiple polynomial degrees. Save the models and their cross-validated RMSEs in a list and choose the best model based on the RMSE.
+
+degrees <- 1:7
+models <- list()
+rmses <- c()
+
+fitControl <- trainControl(method = "cv", number = 20)
+
+for (degree in degrees){
+  # Build up the formula with the selected degree
+  formula <- as.formula(paste("LC50 ~ poly(RDCHI, ", degree, ")", sep=""))
+  
+  # Train the model
+  fit <- caret::train(formula, data=train, method="lm", trControl=fitControl, preProcess=c("center", "scale"))
+  
+  # Get the cross-validated RMSE
+  fitRmse <- fit$results$RMSE
+  # Save the model RMSE
+  rmses <- c(rmses, fitRmse)
+}
+
+# Plot the flexibility of the model vs RMSE
+ggplot(data.frame(degree=degrees, RMSE=rmses), aes(x=degree, y=RMSE)) +
+  geom_point() +
+  geom_line() +
+  xlab("Degree of polynomial") + ylab("RMSE") +
+  theme_minimal()
+
+# Choose the best model
+bestDegree <- degrees[which.min(rmses)]
+bestDegree
+
+# Train the best model again (just for the sake of plotting it)
+bestFormula <- as.formula(paste("LC50 ~ poly(RDCHI, ", bestDegree, ")", sep=""))
+bestFit <- lm(bestFormula, data=train, method="lm", trControl=fitControl)
+
+# Plot the data and the best model
+ggplot(train, aes(x=RDCHI, y=LC50)) +
+  geom_point(size=0.5, color="#34495e") +
+  geom_line(aes(y=predict(bestFit), color="#c0392b"), show.legend = FALSE) +
+  theme_minimal()
+```
+
+### Task 4
+In this task, we aimed to compare the performance of a step function model with 29 knots and a cubic spline model with 26 knots, both resulting in 30 DOF.
+```{r}
+# let's use 30 DOF and compare step function and cubic spline
+# then it'll be 30 knots for the step function and 26 for the cubic spline
+
+knots <- quantile(train$RDCHI, probs = seq(0, 1, length.out = 28))
+
+# Step function
+train$RDCHI_step <- cut(train$RDCHI, breaks=30, labels=FALSE)
+
+# Define the model formulas
+step_model_formula <- LC50 ~ factor(RDCHI_step)
+
+str_knots <- paste("c(", noquote(paste(knots[-c(1, length(knots))], collapse = ", ")), ")", sep = "")
+spline_model_formula <- as.formula(paste("LC50 ~ splines::bs(RDCHI, knots = ", str_knots, ", degree = 3)", sep = ""))
+#spline_model_formula
+
+# Define train control with 10-fold cross-validation
+ctrl <- trainControl(method = "cv", number = 10)
+
+# Fit the models and calculate RMSE using cross-validation
+model_step <- train(step_model_formula, data = train, method = "lm", trControl = ctrl)
+model_spline <- train(spline_model_formula, data = train, method = "lm", trControl = ctrl)
+
+#summary(model_spline)
+
+
+# Predicting
+train$predicted_LC50_spline <- predict(model_spline, newdata=train)
+train$predicted_LC50_step <- predict(model_step, newdata=train)
+
+# Print RMSE for both models
+cat("RMSE for Step Function Model (CV): ", model_step$results$RMSE, "\n")
+cat("RMSE for Cubic Spline Model (CV): ", model_spline$results$RMSE, "\n")
+```
+The step function model slightly outperformed the cubic spline model (RMSE: 1.441 vs. 1.510) due to its ability to better capture abrupt changes in the data.
+```{r}
+ggplot() +
+  # Train data
+  geom_point(data=train, aes(x = RDCHI, y = LC50), alpha = 0.5) +
+  # Step function predictions
+  stat_summary_bin(data=train, aes(x = RDCHI, y = predicted_LC50_step), 
+                   bins = 30, geom = "step", color = "red", linewidth = 1, alpha = 0.8) +
+  # Cubic spline predictions
+  geom_line(data=train, aes(x = RDCHI, y = predicted_LC50_spline), 
+            color = "blue", linewidth = 1, alpha = 0.8) +
+  labs(title = "Step Function vs Cubic Spline Regression", 
+       x = "RDCHI", y = "LC50") +
+  theme_minimal()
+```
+
+```{r include=FALSE}
+train$predicted_LC50_spline <- NULL
+train$predicted_LC50_step <- NULL
+train$RDCHI_step <- NULL
+```
+
+### Task 5
+First, we need to find the best degrees of freedom for the model. We use the cross-validation score to find the best degrees of freedom. In particular we use PRESS (PREdiction Sum of Squares) as the cross-validation score.
+```{r}
+max_df = 30
+res <- list()
+for (i in 2:max_df) {
+  spline <- smooth.spline(train$RDCHI, train$LC50, df = i)
+  # print(paste("df:", i, "Cross-validation score:", spline$cv.crit))
+  res <- c(res, spline$cv.crit)
+}
+best_df <- which.min(res)
+```
+We plot the degrees of freedom on the x-axis and the cross-validation score on the y-axis. The best model is chosen based on the minimum cross-validation score.
+```{r echo=FALSE}
+plot(2:max_df, res, type = "l", xlab = "Degrees of freedom", ylab = "Cross-validation score")
+points(best_df, res[best_df], pch = 19, col = "red")
+legend("topright", legend = c(paste("Best df:", best_df, sep = "")), col = c("red"), pch = 19)
+```
+We plot the data, the basis linear model and the chosen spline model with the best degrees of freedom.
+The model is chosen based on the minimum cross-validation score.
+```{r}
+reg <- lm(LC50 ~ RDCHI, data=train)
+plot(train$RDCHI, train$LC50, xlab="RDCHI", ylab="LC50", pch=20, col="black")
+abline(reg, col="blue")
+#fit a spline with x degrees of freedom
+spline <- smooth.spline(train$RDCHI, train$LC50, df=which.min(res))
+lines(spline, col="red")
+legend("topright", legend=c("Linear", "Spline"), col=c("blue", "red"), lty=1)
+```
+
+### Task 6
+Natural cubic spline:
+GAM is fitted using natural cubic splines to predict `LC50` based on various chemical descriptors. The model is tuned to handle predictors with fewer unique values by adjusting the number of knots. Partial effects of each predictor are extracted and visualized using scatter plots, providing insights into their individual contributions to the `LC50` prediction. By adjusting the number of knots, the model captures the complexity of each predictor's contribution to the `LC50` prediction, providing a detailed understanding of the data.
+```{r}
+# Check the number of unique values in each predictor
+sapply(train, function(x) length(unique(x)))
+
+# Fit a GAM model using natural cubic splines with reduced knots for each predictor
+gam_model <- gam(LC50 ~ 
+                   s(TPSA, bs = "cs", k = 20) +   # Less than 193
+                   s(SAacc, bs = "cs", k = 20) +  # Less than 182
+                   s(H050, bs = "cs", k = 9) +    # Less than 10
+                   s(MLOGP, bs = "cs", k = 20) +  # Less than 349 (k can be higher but 20 is reasonable)
+                   s(RDCHI, bs = "cs", k = 20) +  # Less than 297 (k can be higher but 20 is reasonable)
+                   s(GATS1p, bs = "cs", k = 20) + # Less than 349 (k can be higher but 20 is reasonable)
+                   s(nN, bs = "cs", k = 9) +      # Less than 9
+                   s(C040, bs = "cs", k = 6),     # Less than 6
+                 data = train)
+
+# Summarize the model
+summary(gam_model)
+
+# Extract partial effects of each predictor
+partial_effects <- predict(gam_model, type = "terms", se.fit = TRUE)
+partial_effects_df <- as.data.frame(partial_effects$fit)
+colnames(partial_effects_df) <- gsub("\\.s\\(.*\\)", "", colnames(partial_effects_df))
+partial_effects_df$LC50 <- train$LC50
+
+# Convert the data to long format for ggplot
+partial_effects_long <- partial_effects_df %>%
+  pivot_longer(cols = -LC50, names_to = "Predictor", values_to = "Effect")
+
+# Plot the effects of each predictor using ggplot2
+ggplot(partial_effects_long, aes(x = Effect, y = LC50)) +
+  geom_point() +
+  facet_wrap(~ Predictor, scales = "free_x") +
+  labs(title = "Partial Effects of Predictors on LC50 using natural cubic splines",
+       x = "Partial Effect",
+       y = "LC50") +
+  theme_minimal()
+
+```
+
+Step Function:
+A Generalized Additive Model (GAM) was fitted to predict `LC50` using step functions
+The predictors are binned, and their partial effects are extracted and visualized using scatter plots. This approach allows for a flexible, non-linear relationship between the predictors and `LC50`, providing a more accurate representation of the data.
+
+```{r}
+# Check the number of unique values in each predictor
+unique_counts <- sapply(train, function(x) length(unique(x)))
+print(unique_counts)
+
+# Define the number of bins for each predictor
+bins <- list(TPSA = 10, SAacc = 10, H050 = 4, MLOGP = 10, RDCHI = 10, GATS1p = 10, nN = 4, C040 = 3)
+
+# Create binned predictors in the training set
+train_binned <- train %>%
+  mutate(across(names(bins), ~ cut(., breaks = bins[[cur_column()]], labels = FALSE)))
+
+# Fit a GAM model using step functions (categorical predictors)
+gam_model_step <- gam(LC50 ~ 
+                        factor(TPSA) + 
+                        factor(SAacc) + 
+                        factor(H050) + 
+                        factor(MLOGP) + 
+                        factor(RDCHI) + 
+                        factor(GATS1p) + 
+                        factor(nN) + 
+                        factor(C040),
+                      data = train_binned)
+
+# Summarize the model
+summary(gam_model_step)
+
+# Extract partial effects of each predictor
+partial_effects <- predict(gam_model_step, type = "terms", se.fit = TRUE)
+
+# Manually assign column names to partial effects dataframe
+partial_effects_df <- as.data.frame(partial_effects$fit)
+colnames(partial_effects_df) <- c("TPSA", "SAacc", "H050", "MLOGP", "RDCHI", "GATS1p", "nN", "C040")
+partial_effects_df$LC50 <- train$LC50
+
+# Print column names to ensure they are correct
+print(colnames(partial_effects_df))
+
+# Convert the data to long format for ggplot
+partial_effects_long <- partial_effects_df %>%
+  pivot_longer(cols = -LC50, names_to = "Predictor", values_to = "Effect")
+
+# Plot the effects of each predictor using ggplot2
+ggplot(partial_effects_long, aes(x = Effect, y = LC50)) +
+  geom_point() +
+  facet_wrap(~ Predictor, scales = "free_x") +
+  labs(title = "Partial Effects of Predictors on LC50 using Step Functions",
+       x = "Partial Effect",
+       y = "LC50") +
+  theme_minimal()
+```
+Smoothing splines:
+
+```{r}
+# Check the number of unique values in each predictor
+sapply(train, function(x) length(unique(x)))
+
+# Fit a GAM model using smoothing splines with reduced knots for each predictor
+gam_model <- gam(LC50 ~ 
+                   s(TPSA, bs = "cr", k = 20) +   # Less than 193
+                   s(SAacc, bs = "cr", k = 20) +  # Less than 182
+                   s(H050, bs = "cr", k = 9) +    # Less than 10
+                   s(MLOGP, bs = "cr", k = 20) +  # Less than 349 (k can be higher but 20 is reasonable)
+                   s(RDCHI, bs = "cr", k = 20) +  # Less than 297 (k can be higher but 20 is reasonable)
+                   s(GATS1p, bs = "cr", k = 20) + # Less than 349 (k can be higher but 20 is reasonable)
+                   s(nN, bs = "cr", k = 9) +      # Less than 9
+                   s(C040, bs = "cr", k = 6),     # Less than 6
+                 data = train)
+
+# Summarize the model
+summary(gam_model)
+
+# Extract partial effects of each predictor
+partial_effects <- predict(gam_model, type = "terms", se.fit = TRUE)
+partial_effects_df <- as.data.frame(partial_effects$fit)
+colnames(partial_effects_df) <- gsub("\\.s\\(.*\\)", "", colnames(partial_effects_df))
+partial_effects_df$LC50 <- train$LC50
+
+# Convert the data to long format for ggplot
+partial_effects_long <- partial_effects_df %>%
+  pivot_longer(cols = -LC50, names_to = "Predictor", values_to = "Effect")
+
+# Plot the effects of each predictor using ggplot2
+ggplot(partial_effects_long, aes(x = Effect, y = LC50)) +
+  geom_point() +
+  facet_wrap(~ Predictor, scales = "free_x") +
+  labs(title = "Partial Effects of Predictors on LC50 using smoothing splines",
+       x = "Partial Effect",
+       y = "LC50") +
+  theme_minimal()
+```
+
+### Regression Spline (similar to smoothing spline)
+```{r}
+# Check the number of unique values in each predictor
+sapply(train, function(x) length(unique(x)))
+
+# Fit a GAM model using Regression spline
+gam_model <- gam(LC50 ~ 
+                 s(TPSA, bs = "cr", k = 20) +
+                 s(SAacc, bs = "cr", k = 20) +
+                 s(H050, bs = "cr", k = 9) + 
+                 s(MLOGP, bs = "cr", k = 20) + 
+                 s(RDCHI, bs = "cr", k = 20) + 
+                 s(GATS1p, bs = "cr", k = 20) + 
+                 s(nN, bs = "cr", k = 9) + 
+                 s(C040, bs = "cr", k = 6),
+               data = train, method = "REML") #REML(Restricted Maximum Likelihood) to estimate the optimal amount of                                                    smoothing for each term in the model and avoid over fitting
+
+
+# Summary of the GAM model
+summary(gam_model)
+
+# Extract partial effects of each predictor
+partial_effects <- predict(gam_model, type = "terms", se.fit = TRUE)
+partial_effects_df <- as.data.frame(partial_effects$fit)
+colnames(partial_effects_df) <- gsub("\\.s\\(.*\\)", "", colnames(partial_effects_df))
+partial_effects_df$LC50 <- train$LC50
+
+# Convert the data to long format for ggplot
+partial_effects_long <- partial_effects_df %>%
+  pivot_longer(cols = -LC50, names_to = "Predictor", values_to = "Effect")
+
+# Plot the effects of each predictor using ggplot2
+ggplot(partial_effects_long, aes(x = Effect, y = LC50)) +
+  geom_point() +
+  facet_wrap(~ Predictor, scales = "free_x") +
+  labs(title = "Partial Effects of Predictors on LC50 using Regression Splines",
+       x = "Partial Effect",
+       y = "LC50") +
+  theme_minimal()
+```
+
+
+### Polynomial
+```{r}
+# Fit a GAM model using polynomial terms
+n = 3
+gam_model <- gam(LC50 ~ 
+                 poly(TPSA, n) +
+                 poly(SAacc, n) + 
+                 poly(H050, n) + 
+                 poly(MLOGP, n) + 
+                 poly(RDCHI, n) + 
+                 poly(GATS1p, n) + 
+                 poly(nN, n) + 
+                 poly(C040, n),
+               data = train, method = 'REML')#REML(Restricted Maximum Likelihood) to estimate the optimal amount of                                                    smoothing for each term in the model and avoid over fitting
+
+# Summary of the GAM model
+summary(gam_model)
+
+# Extract partial effects of each predictor
+partial_effects <- predict(gam_model, type = "terms", se.fit = TRUE)
+partial_effects_df <- as.data.frame(partial_effects$fit)
+colnames(partial_effects_df) <- gsub("\\.s\\(.*\\)", "", colnames(partial_effects_df))
+partial_effects_df$LC50 <- train$LC50
+
+# Convert the data to long format for ggplot
+partial_effects_long <- partial_effects_df %>%
+  pivot_longer(cols = -LC50, names_to = "Predictor", values_to = "Effect")
+
+# Plot the effects of each predictor using ggplot2
+ggplot(partial_effects_long, aes(x = Effect, y = LC50)) +
+  geom_point() +
+  facet_wrap(~ Predictor, scales = "free_x") +
+  labs(title = "Partial Effects of Predictors on LC50 using polynomial",
+       x = "Partial Effect",
+       y = "LC50") +
+  theme_minimal()
+```
+Based on R-sq. result, regression spline model is the best model for this dataset.
+```{r}
+model <- gam_model <- gam(LC50 ~ 
+                 s(TPSA, bs = "cr", k = 20) +
+                 s(SAacc, bs = "cr", k = 20) +
+                 s(H050, bs = "cr", k = 9) + 
+                 s(MLOGP, bs = "cr", k = 20) + 
+                 s(RDCHI, bs = "cr", k = 20) + 
+                 s(GATS1p, bs = "cr", k = 20) + 
+                 s(nN, bs = "cr", k = 9) + 
+                 s(C040, bs = "cr", k = 6),
+               data = train, method = "REML")
+yhat <- predict(model, newdata = test)
+summary(yhat)
+yhat <- unlist(yhat)
+write.table(file="mySubmission.txt", yhat, row.names = FALSE,col.names = FALSE)
+```

@@ -170,6 +170,69 @@ varImpPlot(rf_model)
 yhat <- predict(rf_model, newdata=test)
 ```
 
+Random forest with mtry search (DO NOT RUN, TOO LONG)
+
+```{r}
+# Define a grid of mtry values to search over
+# tuneGrid <- expand.grid(mtry = seq(1, ncol(train) - 1, by = 1))
+
+# Set up cross-validation control
+#rForestCtrl <- trainControl(method = "cv", number = 5, search = "grid")
+
+# Train the model with the tuning grid
+# rForestFit <- train(y ~ ., data = train, method = "rf", preProcess = c("center", "scale"), tuneGrid = tuneGrid, allowParallel = TRUE)
+
+# Get the importance of each feature and plot it
+# importance <- importance(rForestFit$finalModel)
+# varImpPlot(rForestFit$finalModel)
+
+# Predict the quality of the test set
+# yhat = predict(rForestFit, newdata = test)
+
+# Get the final mtry value
+# rForestFit$finalModel$mtry
+
+```
+
+
+Ridge regression
+```{r}
+library(glmnet)
+
+lambdas <- 10^seq(2, -2, by = -.1)
+
+y_train = train$y
+x_train <- train[!names(train) %in% "y"]
+
+
+train_matrix <- model.matrix(~ . - 1, data = x_train)
+test_matrix <- model.matrix(~ . -1, data = test)
+str(as.data.frame(train_matrix))
+str(as.data.frame(test_matrix))
+dim(train_matrix)
+dim(test_matrix)
+train_matrix <- as.matrix(train_matrix)  # Exclude the response variable
+train_y <- train$y
+test_matrix <- as.matrix(test_matrix)
+
+
+
+
+ridge_cv <- cv.glmnet(train_matrix, train_y, alpha = 0, lambda = lambdas)
+# Best lambda value
+best_lambda <- ridge_cv$lambda.min
+best_lambda
+dim(train_matrix)
+dim(test_matrix)
+best_ridge <- glmnet(train_matrix, train_y, alpha = 0, lambda = best_lambda)
+dim(test)
+head(test)
+yhat <- predict(best_ridge, s = best_lambda, newx = test_matrix)
+yhat
+write.table(file="mySubmission.txt", pmax(0, yhat), row.names = FALSE,col.names = FALSE)
+```
+
+
 ```{r}
 library(parallel) 
 no_cores <- 6

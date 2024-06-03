@@ -437,13 +437,8 @@ rfDf$y_binary <- factor(ifelse(train$y > 0, 1, 0), levels = c(0, 1))
 # Remove y to avoid using it as a predictor
 rfDf$y <- NULL
 
-# Split the data into training and testing sets
-train_index <- createDataPartition(rfDf$y_binary, p = 0.7, list = FALSE)
-rfDf.train <- rfDf[train_index, ]
-rfDf.test <- rfDf[-train_index, ]
-
 # Fit a random forest model
-rfFit <- caret::train(y_binary ~ ., data = rfDf.train, method = "rf", trControl = trainControl(method = "cv", number = 5), preProcess = c("center", "scale"), mttry = 60)
+rfFit <- caret::train(y_binary ~ ., data = rfDf, method = "rf", trControl = trainControl(method = "cv", number = 5), preProcess = c("center", "scale"), mttry = 60)
 
 # Get accuracy
 rfFit$result$Accuracy
@@ -507,7 +502,7 @@ combinedModel <- function(test, classModel, regModel) {
 }
 
 # Predict all values of test set
-yhat <- combinedModel(test, rfFit, lm_model)
+yhat <- combinedModel(test, rfFit, mars_model)
 
 # Write the results to a file
 write.table(file="mySubmission.txt", pmax(0, yhat), row.names = FALSE, col.names = FALSE)

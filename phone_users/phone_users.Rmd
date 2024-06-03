@@ -445,21 +445,10 @@ rfDf.test <- rfDf[-train_index, ]
 # Fit a random forest model
 rfFit <- caret::train(y_binary ~ ., data = rfDf.train, method = "rf", trControl = trainControl(method = "cv", number = 5), preProcess = c("center", "scale"), mttry = 60)
 
-# Predictions on the test set
-rfDf.yhat <- predict(rfFit, newdata = rfDf.test)
-
-# Plot the number of positive duration both in general and in the training and test sets
-par(mfrow=c(1,2))
-barplot(table(rfDf.train$y_binary), main = "TRAIN: Number of call with positive and zero dur.", xlab = "Positive duration", ylab = "Frequency")
-barplot(table(rfDf.yhat), main = "PREDICTED: Number of call with positive and zero dur.", xlab = "Positive duration", ylab = "Frequency")
-
-# Calculate the accuracy of the model with confusion matrix
-confusion_matrix <- confusionMatrix(rfDf.yhat, rfDf.test$y_binary)
-confusion_matrix$overall["Accuracy"]
+# Get accuracy
+rfFit$result$Accuracy
 
 ```
-
-
 
 Train a model on samples with the response different from 0 (MARS)
 ```{r}
@@ -488,43 +477,41 @@ Train a model on samples with the response different from 0 (LINEAR)
 lmDf <- train[train$y > 0, ]
 lmDf$y_binary <- NULL
 
-# Train a linear model with with caret
-lm_model <- caret::train(y ~ ., data = lmDf, method = "lm", trControl = trainControl(method = "cv", number = 10))
-summary(lm_model)
+baseModel <- lm(y ~ 1, data = lmDf)
+FwStepSel <- step(baseModel, direction = "forward", scope = list(lower = baseModel, upper = lm(y ~ ., data = lmDf)), trace = 0)
+
+#Based on the previous step results:
+lm_model = lm(formula = FwStepSel$call$formula, data = lmDf, trControl = trainControl(method = "loocv", number = 10))
+summary(fit)
 ```
 
 
 Train a model on samples with the response different from 0
 ```{r}
-# Custom model to predict the minutes of outgoing calls for customers
-# First, apply the tree model to get the outcome. If the outcome is different from zero, apply the regression model to get the final response
-
-combinedModel <- function(row) {
-  y = predict(rfFit, newdata = row, type = "raw")
-  # If the prediction outcome is no traffic, return 0
-  if(y == 0)
-    as.numeric(0)
-  # else return predicted value using regression
-  else
-    predict(mars_model, newdata = row)
+combinedModel <- function(test, classModel, regModel) {
+  # Predict outcomes using the random forest model for the entire test set
+  y_rf = predict(classModel, newdata = test, type = "raw")
+  
+  # Initialize yhat with zeros
+  yhat = rep(0, nrow(test))
+  
+  # Identify the rows where the prediction outcome is non-zero
+  non_zero_indices = which(y_rf != 0)
+  
+  # Apply the regression model only to the rows with non-zero outcomes
+  if(length(non_zero_indices) > 0) {
+    yhat[non_zero_indices] = predict(regModel, newdata = test[non_zero_indices, ])
+  }
+  
+  return(yhat)
 }
 
-yhat <- rep(0, nrow(test))
 # Predict all values of test set
-for(i in 1:nrow(test)) {
-  testRow <- test[i, ]
-  yhat[i] <- combinedModel(testRow)
-}
+yhat <- combinedModel(test, rfFit, lm_model)
 
-
-write.table(file="mySubmission.txt", pmax(0, yhat), row.names = FALSE,col.names = FALSE)
-
-
+# Write the results to a file
+write.table(file="mySubmission.txt", pmax(0, yhat), row.names = FALSE, col.names = FALSE)
 ```
-
-
-
-
 
 
 

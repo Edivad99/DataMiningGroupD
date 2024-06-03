@@ -1,0 +1,126 @@
+---
+title: "PhoneUsers"
+author: "Group D"
+date: "2024-04-10"
+output: html_document
+---
+
+```{r include=FALSE}
+# Clear workspace, install library & import data
+library("caret")
+library("Metrics")
+library("corrplot")
+library("earth")
+library("tree")
+
+set.seed(1234)
+```
+
+```{r include=FALSE}
+rm(list = ls())
+train <- read.csv("phone_train.csv", header=TRUE)
+test <- read.csv("phone_validation.csv", header=TRUE)
+
+train$sex <- as.factor(train$sex)
+train$payment.method <- as.factor(train$payment.method)
+train$activation.zone <- as.factor(train$activation.zone)
+train$activation.channel <- as.factor(ifelse(train$activation.channel==5, 1, 0)) #Merge
+train$tariff.plan <- as.factor(ifelse(train$tariff.plan <= 6, 1, train$tariff.plan)) #Merge
+train$vas1 <- as.factor(train$vas1)
+train$vas2 <- as.factor(train$vas2)
+
+test$sex <- as.factor(test$sex)
+test$payment.method <- as.factor(test$payment.method)
+test$activation.zone <- as.factor(ifelse(test$activation.zone == 0, 1, test$activation.zone))
+test$activation.channel <- as.factor(ifelse(test$activation.channel==5, 1, 0)) #Merge
+test$tariff.plan <- as.factor(ifelse(test$tariff.plan <= 6, 1, test$tariff.plan)) #Merge
+test$vas1 <- as.factor(test$vas1)
+test$vas2 <- as.factor(test$vas2)
+```
+
+
+Random forest: prediction if the user has a positive duration of calls
+```{r}
+rfDf <- train
+# Create a new binary response variable. 1 if the customer has more than 0 minutes of outgoing calls, 0 otherwise
+rfDf$y_binary <- factor(ifelse(train$y > 0, 1, 0), levels = c(0, 1))
+# Remove y to avoid using it as a predictor
+rfDf$y <- NULL
+
+# Fit a random forest model
+#rfFit <- caret::train(y_binary ~ ., data = rfDf, method = "rf", trControl = trainControl(method = "cv", number = 5), preProcess = c("center", "scale"), mttry = 60)
+rfFit <- caret::train(y_binary ~ ., data = rfDf, method = "rf", preProcess = c("center", "scale"), mttry = 60)
+
+# Get accuracy
+accuracy <- max(rfFit$results$Accuracy)
+accuracy
+
+```
+
+Train a model on samples with the response different from 0 (MARS)
+```{r}
+# Create a new data frame with all 
+marsDf <- train[train$y > 0, ]
+marsDf$y_binary <- NULL
+
+# Train a MARS model with bagEarthGCV using Caret
+# Grid search for the best degree
+mars_model <- caret::train(y ~ ., data = marsDf, method = "gcvEarth", trControl = trainControl(method = "cv", number = 10), tuneGrid = data.frame(degree = 1:10))
+
+# Use FwStepSel$call$formula
+#mars_model <- caret::train(FwStepSel$call$formula, data = marsDf, method = "gcvEarth", trControl = trainControl(method = "cv", number = 10), tuneGrid = data.frame(degree = 1:5))
+
+summary(mars_model)
+# Visualize the MARS model
+plot(mars_model)
+
+# Get the best model
+best_mars_model <- mars_model$finalModel
+```
+
+Train a model on samples with the response different from 0 (LINEAR)
+```{r}
+# Create a new data frame with all 
+lmDf <- train[train$y > 0, ]
+lmDf$y_binary <- NULL
+
+baseModel <- lm(y ~ 1, data = lmDf)
+FwStepSel <- step(baseModel, direction = "forward", scope = list(lower = baseModel, upper = lm(y ~ ., data = lmDf)), trace = 0)
+FwStepSel$call$formula
+
+#Based on the previous step results:
+lm_model = train(FwStepSel$call$formula, data = lmDf, trControl = trainControl(method = "loocv", number = 10), preProcess = c("center", "scale"))
+summary(lm_model)
+```
+
+
+Train a model on samples with the response different from 0
+```{r}
+combinedModel <- function(test, classModel, regModel) {
+  # Predict outcomes using the random forest model for the entire test set
+  y_rf = predict(classModel, newdata = test, type = "raw")
+  
+  # Initialize yhat with zeros
+  yhat = rep(0, nrow(test))
+  
+  # Identify the rows where the prediction outcome is non-zero
+  non_zero_indices = which(y_rf != 0)
+  
+  # Apply the regression model only to the rows with non-zero outcomes
+  if(length(non_zero_indices) > 0) {
+    yhat[non_zero_indices] = predict(regModel, newdata = test[non_zero_indices, ])
+  }
+  
+  return(yhat)
+}
+
+# Predict all values of test set
+yhat <- combinedModel(test, rfFit, mars_model)
+
+# Write the results to a file
+write.table(file="mySubmission.txt", pmax(0, yhat), row.names = FALSE, col.names = FALSE)
+```
+
+
+
+

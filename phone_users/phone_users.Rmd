@@ -474,6 +474,7 @@ lmDf$y_binary <- NULL
 
 baseModel <- lm(y ~ 1, data = lmDf)
 FwStepSel <- step(baseModel, direction = "forward", scope = list(lower = baseModel, upper = lm(y ~ ., data = lmDf)), trace = 0)
+FwStepSel$call$formula
 
 #Based on the previous step results:
 lm_model = lm(formula = FwStepSel$call$formula, data = lmDf, trControl = trainControl(method = "loocv", number = 10))

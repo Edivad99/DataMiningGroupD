@@ -47,13 +47,28 @@ rfDf$y_binary <- factor(ifelse(train$y > 0, 1, 0), levels = c(0, 1))
 # Remove y to avoid using it as a predictor
 rfDf$y <- NULL
 
+# Create a new data frame with the last three months of data (feature starting with q09, q08, q07)
+#q09 <- c("q09.ch.cc", "q09.ch.sms", "q09.in.dur.tot", "q09.in.ch.tot", "q09.out.val.offpeak", "q09.out.dur.offpeak", "q09.out.ch.offpeak", "q09.out.val.peak", "q09.out.dur.peak", "q09.out.ch.peak")
+#q08 <- c("q08.ch.cc", "q08.ch.sms", "q08.in.dur.tot", "q08.in.ch.tot", "q08.out.val.offpeak", "q08.out.dur.offpeak", "q08.out.ch.offpeak", "q08.out.val.peak", "q08.out.dur.peak", "q08.out.ch.peak")
+#q07 <- c("q07.ch.cc", "q07.ch.sms", "q07.in.dur.tot", "q07.in.ch.tot", "q07.out.val.offpeak", "q07.out.dur.offpeak", "q07.out.ch.offpeak", "q07.out.val.peak", "q07.out.dur.peak", "q07.out.ch.peak")
+#rfDfLastThreeMonths <- rfDf[, c(q09, q08, q07, "y_binary")]
+
+# Create a new data frame with the last three months of data (feature starting with q09, q08, q07)
+q09 <- c("q09.in.dur.tot", "q09.in.ch.tot", "q09.out.val.peak", "q09.out.dur.peak", "q09.out.ch.peak")
+q08 <- c("q08.in.dur.tot", "q08.in.ch.tot", "q08.out.val.peak", "q08.out.dur.peak", "q08.out.ch.peak")
+age <- c("age")
+#q07 <- c("q07.ch.cc", "q07.ch.sms", "q07.in.dur.tot", "q07.in.ch.tot", "q07.out.val.offpeak", "q07.out.dur.offpeak", "q07.out.ch.offpeak", "q07.out.val.peak", "q07.out.dur.peak", "q07.out.ch.peak")
+rfDfLastThreeMonths <- rfDf[, c(q09, q08, age, "y_binary")]
+
 # Fit a random forest model
-#rfFit <- caret::train(y_binary ~ ., data = rfDf, method = "rf", trControl = trainControl(method = "cv", number = 5), preProcess = c("center", "scale"), mttry = 60)
-rfFit <- caret::train(y_binary ~ ., data = rfDf, method = "rf", preProcess = c("center", "scale"), mttry = 60)
+rfFit <- caret::train(y_binary ~ ., data = rfDfLastThreeMonths, method = "rf", trControl = trainControl(method = "cv", number = 5), preProcess = c("center", "scale"), mttry = 60)
+#rfFit <- caret::train(y_binary ~ , data = rfDfLastThreeMonths, method = "rf", preProcess = c("center", "scale"), mttry = 60)
 
 # Get accuracy
 accuracy <- max(rfFit$results$Accuracy)
 accuracy
+
+
 
 ```
 

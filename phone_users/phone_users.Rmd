@@ -90,57 +90,6 @@ for (i in 0:8) {
 ```
 
 ```{r}
-# train$q01.out.dur.peak <- NULL
-# train$q01.out.val.peak <- NULL
-# train$q02.out.dur.peak <- NULL
-# train$q02.out.val.peak <- NULL
-# train$q03.out.dur.peak <- NULL
-# train$q03.out.val.peak <- NULL
-# train$q04.out.dur.peak <- NULL
-# train$q04.out.val.peak <- NULL
-# train$q05.out.dur.peak <- NULL
-# train$q05.out.val.peak <- NULL
-# train$q06.out.dur.peak <- NULL
-# train$q06.out.val.peak <- NULL
-# train$q07.out.dur.peak <- NULL
-# train$q07.out.val.peak <- NULL
-# train$q08.out.dur.peak <- NULL
-# train$q08.out.val.peak <- NULL
-# train$q09.out.dur.peak <- NULL
-# train$q09.out.val.peak <- NULL
-# 
-# train$q01.out.dur.offpeak <- NULL
-# train$q01.out.val.offpeak <- NULL
-# train$q02.out.dur.offpeak <- NULL
-# train$q02.out.val.offpeak <- NULL
-# train$q03.out.dur.offpeak <- NULL
-# train$q03.out.val.offpeak <- NULL
-# train$q04.out.dur.offpeak <- NULL
-# train$q04.out.val.offpeak <- NULL
-# train$q05.out.dur.offpeak <- NULL
-# train$q05.out.val.offpeak <- NULL
-# train$q06.out.dur.offpeak <- NULL
-# train$q06.out.val.offpeak <- NULL
-# train$q07.out.dur.offpeak <- NULL
-# train$q07.out.val.offpeak <- NULL
-# train$q08.out.dur.offpeak <- NULL
-# train$q08.out.val.offpeak <- NULL
-# train$q09.out.dur.offpeak <- NULL
-# train$q09.out.val.offpeak <- NULL
-# 
-# train$q01.in.dur.tot <- NULL
-# train$q02.in.dur.tot <- NULL
-# train$q03.in.dur.tot <- NULL
-# train$q04.in.dur.tot <- NULL
-# train$q05.in.dur.tot <- NULL
-# train$q06.in.dur.tot <- NULL
-# train$q07.in.dur.tot <- NULL
-# train$q08.in.dur.tot <- NULL
-# train$q09.in.dur.tot <- NULL
-
-```
-
-```{r}
 baseModel <- lm(y ~ 1, data = train)
 FwStepSel <- step(baseModel, direction = "forward", scope = list(lower = baseModel, upper = lm(y ~ ., data = train)), trace = 0)
 

@@ -36,6 +36,12 @@ test$activation.channel <- as.factor(ifelse(test$activation.channel==5, 1, 0)) #
 test$tariff.plan <- as.factor(ifelse(test$tariff.plan <= 6, 1, test$tariff.plan)) #Merge
 test$vas1 <- as.factor(test$vas1)
 test$vas2 <- as.factor(test$vas2)
+
+# Convert all the numeric features to log(X+1)
+q09 <- c("q09.in.dur.tot", "q09.in.ch.tot", "q09.out.val.peak", "q09.out.dur.peak", "q09.out.ch.peak")
+q08 <- c("q08.in.dur.tot", "q08.in.ch.tot", "q08.out.val.peak", "q08.out.dur.peak", "q08.out.ch.peak")
+q07 <- c("q07.in.dur.tot", "q07.in.ch.tot", "q07.out.val.peak", "q07.out.dur.peak", "q07.out.ch.peak")
+other <- c("age", "sex", "payment.method", "activation.zone", "activation.channel", "tariff.plan", "vas1", "vas2")
 ```
 
 
@@ -48,42 +54,71 @@ rfDf$y_binary <- factor(ifelse(train$y > 0, 1, 0), levels = c(0, 1))
 rfDf$y <- NULL
 
 # Create a new data frame with the last three months of data (feature starting with q09, q08, q07)
-#q09 <- c("q09.ch.cc", "q09.ch.sms", "q09.in.dur.tot", "q09.in.ch.tot", "q09.out.val.offpeak", "q09.out.dur.offpeak", "q09.out.ch.offpeak", "q09.out.val.peak", "q09.out.dur.peak", "q09.out.ch.peak")
-#q08 <- c("q08.ch.cc", "q08.ch.sms", "q08.in.dur.tot", "q08.in.ch.tot", "q08.out.val.offpeak", "q08.out.dur.offpeak", "q08.out.ch.offpeak", "q08.out.val.peak", "q08.out.dur.peak", "q08.out.ch.peak")
-#q07 <- c("q07.ch.cc", "q07.ch.sms", "q07.in.dur.tot", "q07.in.ch.tot", "q07.out.val.offpeak", "q07.out.dur.offpeak", "q07.out.ch.offpeak", "q07.out.val.peak", "q07.out.dur.peak", "q07.out.ch.peak")
-#rfDfLastThreeMonths <- rfDf[, c(q09, q08, q07, "y_binary")]
 
-# Create a new data frame with the last three months of data (feature starting with q09, q08, q07)
-q09 <- c("q09.in.dur.tot", "q09.in.ch.tot", "q09.out.val.peak", "q09.out.dur.peak", "q09.out.ch.peak")
-q08 <- c("q08.in.dur.tot", "q08.in.ch.tot", "q08.out.val.peak", "q08.out.dur.peak", "q08.out.ch.peak")
-age <- c("age")
-#q07 <- c("q07.ch.cc", "q07.ch.sms", "q07.in.dur.tot", "q07.in.ch.tot", "q07.out.val.offpeak", "q07.out.dur.offpeak", "q07.out.ch.offpeak", "q07.out.val.peak", "q07.out.dur.peak", "q07.out.ch.peak")
-rfDfLastThreeMonths <- rfDf[, c(q09, q08, age, "y_binary")]
+
+#rfDfLastThreeMonths <- rfDf[, c(q09, q08, q07, other, "y_binary")]
+rfDfLastTwoMonths <- rfDf[, c(q09, q08, other, "y_binary")]
 
 # Fit a random forest model
-rfFit <- caret::train(y_binary ~ ., data = rfDfLastThreeMonths, method = "rf", trControl = trainControl(method = "cv", number = 5), preProcess = c("center", "scale"), mttry = 60)
-#rfFit <- caret::train(y_binary ~ , data = rfDfLastThreeMonths, method = "rf", preProcess = c("center", "scale"), mttry = 60)
+rfFit <- caret::train(y_binary ~ ., data = rfDfLastTwoMonths, method = "rf", trControl = trainControl(method = "cv", number = 10), preProcess = c("center", "scale"), mttry = 30)
 
 # Get accuracy
 accuracy <- max(rfFit$results$Accuracy)
 accuracy
 
+```
+
+```{r}
+#logiDf <- train
+# Create a new binary response variable. 1 if the customer has more than 0 minutes of outgoing calls, 0 otherwise
+#logiDf$y_binary <- factor(ifelse(train$y > 0, 1, 0), levels = c(0, 1))
+# Remove y to avoid using it as a predictor
+#logiDf$y <- NULL
+#logiDfLastTwoMonths <- logiDf[, c(q09, q08, other, "y_binary")]
+# Train a logistic regression model
+# Since the binary response depends only on the actual call traffic, we remove the other variables that are not related to the call traffic 
+
+#logi_model <- glm(y_binary ~ ., data = logiDfLastTwoMonths, family = "binomial")
+#logi_model <- caret::train(y_binary ~ ., data = logiDfLastTwoMonths, method = "regLogistic", trControl = trainControl(method = "cv", number = 10), preProcess = c("center", "scale"))
+
+```
+
+
+```{r}
+# Scatterplot of positive call duration
+posDf <- train[train$y > 0, ]
+posDf$y_binary <- NULL
+
+posDf$tariff.plan <- as.numeric(posDf$tariff.plan)
+posDf$activation.channel <- as.numeric(posDf$activation.channel)
+posDf$activation.zone <- as.numeric(posDf$activation.zone)
+posDf$payment.method <- as.numeric(posDf$payment.method)
+posDf$sex <- as.numeric(posDf$sex)
+posDf$vas1 <- as.numeric(posDf$vas1)
+posDf$vas2 <- as.numeric(posDf$vas2)
+
+
+correlationMatrix <- cor(posDf)
+correlationMatrixY <- correlationMatrix["y", ]
+correlationMatrixY <- correlationMatrixY[order(abs(correlationMatrixY), decreasing = TRUE)]
+barplot(correlationMatrixY, las = 2, cex.names = 0.7, main = "Correlation of features with y")
 
 
 ```
 
+
 Train a model on samples with the response different from 0 (MARS)
 ```{r}
 # Create a new data frame with all 
-marsDf <- train[train$y > 0, ]
+#marsDf <- train[train$y > 0, ]
+marsDf <- train
 marsDf$y_binary <- NULL
+
+marsDfLastTwoMonths <- marsDf[, c(q09, q08, other, "y")]
 
 # Train a MARS model with bagEarthGCV using Caret
 # Grid search for the best degree
-mars_model <- caret::train(y ~ ., data = marsDf, method = "gcvEarth", trControl = trainControl(method = "cv", number = 10), tuneGrid = data.frame(degree = 1:10))
-
-# Use FwStepSel$call$formula
-#mars_model <- caret::train(FwStepSel$call$formula, data = marsDf, method = "gcvEarth", trControl = trainControl(method = "cv", number = 10), tuneGrid = data.frame(degree = 1:5))
+mars_model <- caret::train(log(y+1) ~ ., data = marsDfLastTwoMonths, method = "gcvEarth", trControl = trainControl(method = "cv", number = 10), tuneGrid = data.frame(degree = 1:5), preProcess = c("center", "scale"))
 
 summary(mars_model)
 # Visualize the MARS model
@@ -96,16 +131,16 @@ best_mars_model <- mars_model$finalModel
 Train a model on samples with the response different from 0 (LINEAR)
 ```{r}
 # Create a new data frame with all 
-lmDf <- train[train$y > 0, ]
-lmDf$y_binary <- NULL
+#lmDf <- train[train$y > 0, ]
+#lmDf$y_binary <- NULL
 
-baseModel <- lm(y ~ 1, data = lmDf)
-FwStepSel <- step(baseModel, direction = "forward", scope = list(lower = baseModel, upper = lm(y ~ ., data = lmDf)), trace = 0)
-FwStepSel$call$formula
+#baseModel <- lm(y ~ 1, data = lmDf)
+#FwStepSel <- step(baseModel, direction = "forward", scope = list(lower = baseModel, upper = lm(y ~ ., data = lmDf)), trace = 0)
+#FwStepSel$call$formula
 
 #Based on the previous step results:
-lm_model = train(FwStepSel$call$formula, data = lmDf, trControl = trainControl(method = "loocv", number = 10), preProcess = c("center", "scale"))
-summary(lm_model)
+#lm_model = train(FwStepSel$call$formula, data = lmDf, trControl = trainControl(method = "loocv", number = 10), preProcess = c("center", "scale"))
+#summary(lm_model)
 ```
 
 
@@ -113,7 +148,10 @@ Train a model on samples with the response different from 0
 ```{r}
 combinedModel <- function(test, classModel, regModel) {
   # Predict outcomes using the random forest model for the entire test set
-  y_rf = predict(classModel, newdata = test, type = "raw")
+  y_rf = predict(classModel, newdata = test, type = "prob")
+  tresh = 0.25
+  y_rf = ifelse(y_rf[, 2] > tresh, 1, 0)
+  
   
   # Initialize yhat with zeros
   yhat = rep(0, nrow(test))
@@ -123,7 +161,7 @@ combinedModel <- function(test, classModel, regModel) {
   
   # Apply the regression model only to the rows with non-zero outcomes
   if(length(non_zero_indices) > 0) {
-    yhat[non_zero_indices] = predict(regModel, newdata = test[non_zero_indices, ])
+    yhat[non_zero_indices] = exp(predict(regModel, newdata = test[non_zero_indices, ]))-1
   }
   
   return(yhat)

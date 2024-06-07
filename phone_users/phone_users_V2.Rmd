@@ -55,16 +55,35 @@ rfDf$y <- NULL
 
 # Create a new data frame with the last three months of data (feature starting with q09, q08, q07)
 
-
-#rfDfLastThreeMonths <- rfDf[, c(q09, q08, q07, other, "y_binary")]
 rfDfLastTwoMonths <- rfDf[, c(q09, q08, other, "y_binary")]
 
 # Fit a random forest model
 rfFit <- caret::train(y_binary ~ ., data = rfDfLastTwoMonths, method = "rf", trControl = trainControl(method = "cv", number = 10), preProcess = c("center", "scale"), mttry = 30)
 
-# Get accuracy
-accuracy <- max(rfFit$results$Accuracy)
-accuracy
+# Confusion matrix
+confusionMatrix <- caret::confusionMatrix(rfFit)
+confusionMatrix
+
+rfFit.tp <- confusionMatrix$table[2, 2] # True positive: the number of positive instances correctly classified
+rfFit.tn <- confusionMatrix$table[1, 1] # True negative: the number of negative instances correctly classified
+rfFit.fp <- confusionMatrix$table[1, 2] # False positive: the number of negative instances incorrectly classified as positive
+rfFit.fn <- confusionMatrix$table[2, 1] # False negative: the number of positive instances incorrectly classified as negative
+
+# Accuracy: the proportion of true results (both true positives and true negatives) among the total number of cases examined.
+rfFit.accuracy <- (rfFit.tp + rfFit.tn) / (rfFit.tp + rfFit.tn + rfFit.fp + rfFit.fn)
+cat("Accuracy: ", rfFit.accuracy, "\n")
+
+# Precision: the proportion of true positive results among the positive predictions.
+rfFit.precision <- rfFit.tp / (rfFit.tp + rfFit.fp)
+rfFit.precision
+
+# Recall (Sensitivity): the proportion of actual positives correctly identified by the classifier.
+rfFit.recall <- rfFit.tp / (rfFit.tp + rfFit.fn)
+cat("Recall: ", rfFit.recall, "\n")
+
+# Specificity: the proportion of actual negatives correctly identified by the classifier.
+rfFit.specificity <- rfFit.tn / (rfFit.tn + rfFit.fp)
+cat("Specificity: ", rfFit.specificity, "\n")
 
 ```
 

@@ -21,6 +21,7 @@ rm(list = ls())
 train <- read.csv("phone_train.csv", header=TRUE)
 test <- read.csv("phone_validation.csv", header=TRUE)
 
+# Ensure that the features are in the right format
 train$sex <- as.factor(train$sex)
 train$payment.method <- as.factor(train$payment.method)
 train$activation.zone <- as.factor(train$activation.zone)
@@ -37,7 +38,7 @@ test$tariff.plan <- as.factor(ifelse(test$tariff.plan <= 6, 1, test$tariff.plan)
 test$vas1 <- as.factor(test$vas1)
 test$vas2 <- as.factor(test$vas2)
 
-# Convert all the numeric features to log(X+1)
+# Save feature names in vectors to be used later
 q09 <- c("q09.in.dur.tot", "q09.in.ch.tot", "q09.out.val.peak", "q09.out.dur.peak", "q09.out.ch.peak")
 q08 <- c("q08.in.dur.tot", "q08.in.ch.tot", "q08.out.val.peak", "q08.out.dur.peak", "q08.out.ch.peak")
 q07 <- c("q07.in.dur.tot", "q07.in.ch.tot", "q07.out.val.peak", "q07.out.dur.peak", "q07.out.ch.peak")
@@ -45,8 +46,9 @@ other <- c("age", "sex", "payment.method", "activation.zone", "activation.channe
 ```
 
 # Initial analysis of the dataset
-
 ## TODO
+# Feature selection
+## Todo: using only the data from the last two months
 
 # Two-step model: classification and regression
 By analyzing the training data set, it is possible to see that many of the values of total monthly duration (in seconds) of outgoing calls in the tenth month are zero. This means that many users did not make any outgoing calls in the tenth month and so it my be unnecessary to predict the duration of calls for these users. Therefore, we propose a two-step model to predict the response. The first step is a classification model that predicts if the user has a positive duration of calls and the second step is a regression model that predicts the duration of calls for the users that have a positive duration of calls.
@@ -70,15 +72,9 @@ Just for the sake of having a complete view of the data, we also plot the ratio 
 barplot(table(ifelse(train$y > 0, "Positive duration", "Zero duration")), main = "Number of samples with positive duration vs zero duration of calls", xlab = "Duration of calls", ylab = "Number of samples", col = c("#2980b9", "#e74c3c"))
 ```
 
-# Feature selection
-## TODO
+
 # Classification
-## TODO
-# Regression
-## TODO
-
-
-Random forest: prediction if the user has a positive duration of calls
+# Todo: how to use rf for classification + confusion matrix results
 ```{r}
 rfDf <- train
 # Create a new binary response variable. 1 if the customer has more than 0 minutes of outgoing calls, 0 otherwise
@@ -140,7 +136,7 @@ barplot(correlationMatrixY, las = 2, cex.names = 0.7, main = "Correlation of fea
 ```
 
 
-Train a model on samples with the response different from 0 (MARS)
+# Regression
 ```{r}
 # Create a new data frame with all 
 #marsDf <- train[train$y > 0, ]

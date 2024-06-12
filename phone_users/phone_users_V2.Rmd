@@ -120,21 +120,6 @@ cat("Specificity: ", rfFit.specificity, "\n")
 
 ```
 
-```{r include=FALSE}
-#logiDf <- train
-# Create a new binary response variable. 1 if the customer has more than 0 minutes of outgoing calls, 0 otherwise
-#logiDf$y_binary <- factor(ifelse(train$y > 0, 1, 0), levels = c(0, 1))
-# Remove y to avoid using it as a predictor
-#logiDf$y <- NULL
-#logiDfLastTwoMonths <- logiDf[, c(q09, q08, other, "y_binary")]
-# Train a logistic regression model
-# Since the binary response depends only on the actual call traffic, we remove the other variables that are not related to the call traffic 
-
-#logi_model <- glm(y_binary ~ ., data = logiDfLastTwoMonths, family = "binomial")
-#logi_model <- caret::train(y_binary ~ ., data = logiDfLastTwoMonths, method = "regLogistic", trControl = trainControl(method = "cv", number = 10), preProcess = c("center", "scale"))
-
-```
-
 
 ```{r}
 posDf <- train[train$y > 0, ]

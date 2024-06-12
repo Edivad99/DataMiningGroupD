@@ -137,6 +137,14 @@ barplot(correlationMatrixY, las = 2, cex.names = 0.7, main = "Correlation of fea
 
 
 # Regression
+For the regression we utilized a Multivariate Adaptive Regression Splines (MARS) model to predict the duration of outgoing calls using our dataset. Initially, we prepared the training dataset by removing the binary response variable, y_binary. Data from the last two months (q09 and q08), along with other relevant features and the target variable y, were combined into a new dataframe, marsDfLastTwoMonths.
+
+We then trained the MARS model using the train function from the caret package, with the target variable transformed using log(y+1) to handle skewness. The "gcvEarth" method, which stands for Generalized Cross-Validation for Earth models (MARS), was employed. Subsequently, we conducted a grid search over the degrees of interaction (from 1 to 5) to find the optimal model, where interaction degree refers to the complexity of the interactions between variables considered by the model.
+
+The summary of the trained MARS model was printed, and the model was visualized using a plot to show the relationship between the interaction degree and the Root Mean Square Error (RMSE) during cross-validation. The console output displayed the coefficients of the MARS model, indicating which terms and interactions between terms were included in the final model. Our model selected 33 out of 43 possible terms and 10 out of 23 predictors. Significant predictors included "q09.out.ch.peak," "tariff.plan8," "tariff.plan7," "q09.out.val.peak," and "age."
+
+The goodness of fit was indicated by the Generalized Cross-Validation (GCV) score, Residual Sum of Squares (RSS), and R-squared values, suggesting a moderate fit (GCV: 4.678, RSS: 46027.67, GRSq: 0.567, RSq: 0.574). The plot illustrated the RMSE against the degrees of interaction, indicating that the RMSE decreases significantly up to an interaction degree of 3, after which it stabilizes. This suggests that adding more complexity beyond three-way interactions does not substantially improve model performance.
+
 ```{r}
 # Create a new data frame with all 
 #marsDf <- train[train$y > 0, ]

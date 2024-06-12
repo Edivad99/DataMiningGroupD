@@ -53,7 +53,7 @@ By analyzing the training data set, it is possible to see that many of the value
 
 In the following histogram, we can see that the distribution of the response variable is highly skewed to the left This is because many users did not make any outgoing calls in the tenth month. It is so skewed that it is hard to see the real distribution of call duration. In the second histogram, by removing the users with zero duration of calls, we can see the real distribution of call duration. The plots are limited to 1000 minutes of calls for better visualization.
 
-By having two models we can have more control over the learning process. The features that influence whether a call has zero duration may differ from those that influence the length of a call. For instance, the age feature might be more relevant to zero-duration calls, while the tariff plan might be more relevant for predicting call duration (young people might be less likely to make calls because of messaging apps, while older people might make longer calls). Separate models can provide clearer insights into the different factors affecting zero-duration calls and actual call durations. This can be particularly useful for business decisions, such as addressing the causes of zero-duration calls or improving user experience to increase call durations.
+By having two models we can have more control over the learning process. The features that influence whether a call has zero duration may differ from those that influence the length of a call. For instance, the age feature might be more relevant to zero-duration calls, while the tariff plan might be more relevant for predicting call duration (young people might be less likely to make calls because of messaging apps, while older people might make longer calls). Separate models can provide clearer insights into the different factors affecting zero-duration calls and actual call duration. This can be particularly useful for business decisions, such as addressing the causes of zero-duration calls or improving user experience to increase call duration.
 
 ```{r}
 # Histogram of minutes of outgoing calls
@@ -76,8 +76,7 @@ barplot(table(ifelse(train$y > 0, "Positive duration", "Zero duration")), main =
 ## TODO
 # Regression
 ## TODO
-# Model combination
-# Conclusion
+
 
 Random forest: prediction if the user has a positive duration of calls
 ```{r}
@@ -177,31 +176,20 @@ plot(mars_model)
 best_mars_model <- mars_model$finalModel
 ```
 
-Train a model on samples with the response different from 0 (LINEAR)
-```{r}
-# Create a new data frame with all 
-#lmDf <- train[train$y > 0, ]
-#lmDf$y_binary <- NULL
+# Model combination
+The final model combines the classification model and the regression model. We have created a function that accepts the test set, the classification model, and the regression model as input and returns the predicted values. The function first predicts the binary outcome using the random forest model. If the predicted outcome is non-zero, the function applies the regression model to predict the duration of calls. To make this function faster, we first predict the binary outcome for the entire test set and then apply the regression model only to the rows with positive outcomes. The other alternative was to apply the two models to each row of the test set, but this was much slower due to the way predict() works in R.
 
-#baseModel <- lm(y ~ 1, data = lmDf)
-#FwStepSel <- step(baseModel, direction = "forward", scope = list(lower = baseModel, upper = lm(y ~ ., data = lmDf)), trace = 0)
-#FwStepSel$call$formula
+The threshold for the binary outcome is set to 0.25. This threshold was chosen based on the confusion matrix of the random forest model and it is set this low because it is better to have false positives that can still be predicted by the regression model than false negatives that will not be predicted by the regression model and will be set to zero.
 
-#Based on the previous step results:
-#lm_model = train(FwStepSel$call$formula, data = lmDf, trControl = trainControl(method = "loocv", number = 10), preProcess = c("center", "scale"))
-#summary(lm_model)
-```
+After returning the predicted values, the script writes the results to a file.
 
-
-Train a model on samples with the response different from 0
 ```{r}
 combinedModel <- function(test, classModel, regModel) {
   # Predict outcomes using the random forest model for the entire test set
   y_rf = predict(classModel, newdata = test, type = "prob")
   tresh = 0.25 
   y_rf = ifelse(y_rf[, 2] > tresh, 1, 0)
-  
-  
+
   # Initialize yhat with zeros
   yhat = rep(0, nrow(test))
   
@@ -223,6 +211,6 @@ yhat <- combinedModel(test, rfFit, mars_model)
 write.table(file="mySubmission.txt", pmax(0, yhat), row.names = FALSE, col.names = FALSE)
 ```
 
-
+# Conclusions
 
 

@@ -3,6 +3,9 @@ title: "PhoneUsers"
 author: "Group D"
 date: "2024-04-10"
 output: html_document
+editor_options: 
+  markdown: 
+    wrap: sentence
 ---
 
 ```{r include=FALSE}
@@ -12,6 +15,9 @@ library("Metrics")
 library("corrplot")
 library("earth")
 library("tree")
+library("readr")
+library("dplyr")
+library("GGally")
 
 set.seed(1234)
 ```
@@ -46,16 +52,90 @@ other <- c("age", "sex", "payment.method", "activation.zone", "activation.channe
 ```
 
 # Initial analysis of the dataset
-## TODO
+
+The dataset consists of 10,000 entries and 99 variables, capturing various characteristics and behaviors of customers over 9 months.
+Here’s a summary of the key points derived from the initial exploration of the dataset:
+
+## Data Quality:
+
+**Missing Values:** There are no missing values in the dataset.
+
+**Outliers:** The dataset contains some outliers, particularly in traffic-related variables, which could impact model performance if not addressed.
+
+**Categorical Variables:** Many variables are categorical and may require encoding.They have been converted to Factors for reassurance after loading the dataset.
+
+## Customer Demographics and Characteristics (Categorical Variables):
+
+**tariff.plan:** Categorical variable with 5 levels indicating different customer tariff plans.
+
+**payment.method:** Categorical variable with 3 levels (Postal Order, Credit Card, Direct Debit).
+
+**sex:** Categorical variable with 3 levels (Male, Female, Company).
+
+**age:** Continuous variable representing the age of the customers.
+
+**activation.zone:** Categorical variable with 4 levels representing geographical zones.
+
+**activation.channel:** Categorical variable with 8 levels indicating the channel through which customers activated their services.
+
+**vas1**, **vas2:** Binary variables indicating the presence of value-added services.
+
+## Traffic Data Over 9 Months:
+
+For each month (q01 to q9), the dataset includes variables for:
+
+**qnn.out.ch.peak:** Total monthly number of outgoing calls at peak tariff times.
+
+**qnn.out.dur.peak:** Duration of total monthly outgoing calls at peak tariff times.
+
+**qnn.out.val.peak:** Total monthly outgoing call value at peak tariff times.
+
+**qnn.out.ch.offpeak:** Total monthly number of outgoing calls at off-peak tariff times.
+
+**qnn.out.dur.offpeak:** Duration of total monthly outgoing calls at off-peak tariff times.
+
+**qnn.out.val.offpeak:** Total monthly outgoing call value at off-peak tariff times.
+
+**qnn.in.ch.tot:** Total monthly number of incoming calls.
+
+**qnn.in.dur.tot:** Duration of total monthly incoming calls.
+
+**qnn.ch.sms:** Total monthly number of SMS sent.
+
+**qnn.ch.cc:** Number of monthly calls to customer services.
+
+## Initial Observations:
+
+**Age Distribution:** The age of customers varies widely, with a mean of approximately 38.1 years and a standard deviation of 12.6 years.
+
+**Traffic Patterns:** There are significant variances in call duration, call value, and number of calls both at peak and off-peak times.
+The data shows some customers have zero traffic in certain months, indicating periods of inactivity.
+
+**SMS and Customer Service Calls:** The number of SMS sent and calls to customer service also show wide variability, with some customers having very high engagement in these activities.
+
+**Deactivation Rates:** The binary deactivation status provides a critical outcome variable for predictive modeling, useful for understanding customer churn.
+
 # Feature selection
+
 ## Todo: using only the data from the last two months
 
 # Two-step model: classification and regression
-By analyzing the training data set, it is possible to see that many of the values of total monthly duration (in seconds) of outgoing calls in the tenth month are zero. This means that many users did not make any outgoing calls in the tenth month and so it my be unnecessary to predict the duration of calls for these users. Therefore, we propose a two-step model to predict the response. The first step is a classification model that predicts if the user has a positive duration of calls and the second step is a regression model that predicts the duration of calls for the users that have a positive duration of calls.
 
-In the following histogram, we can see that the distribution of the response variable is highly skewed to the left This is because many users did not make any outgoing calls in the tenth month. It is so skewed that it is hard to see the real distribution of call duration. In the second histogram, by removing the users with zero duration of calls, we can see the real distribution of call duration. The plots are limited to 1000 minutes of calls for better visualization.
+By analyzing the training data set, it is possible to see that many of the values of total monthly duration (in seconds) of outgoing calls in the tenth month are zero.
+This means that many users did not make any outgoing calls in the tenth month and so it my be unnecessary to predict the duration of calls for these users.
+Therefore, we propose a two-step model to predict the response.
+The first step is a classification model that predicts if the user has a positive duration of calls and the second step is a regression model that predicts the duration of calls for the users that have a positive duration of calls.
 
-By having two models we can have more control over the learning process. The features that influence whether a call has zero duration may differ from those that influence the length of a call. For instance, the age feature might be more relevant to zero-duration calls, while the tariff plan might be more relevant for predicting call duration (young people might be less likely to make calls because of messaging apps, while older people might make longer calls). Separate models can provide clearer insights into the different factors affecting zero-duration calls and actual call duration. This can be particularly useful for business decisions, such as addressing the causes of zero-duration calls or improving user experience to increase call duration.
+In the following histogram, we can see that the distribution of the response variable is highly skewed to the left This is because many users did not make any outgoing calls in the tenth month.
+It is so skewed that it is hard to see the real distribution of call duration.
+In the second histogram, by removing the users with zero duration of calls, we can see the real distribution of call duration.
+The plots are limited to 1000 minutes of calls for better visualization.
+
+By having two models we can have more control over the learning process.
+The features that influence whether a call has zero duration may differ from those that influence the length of a call.
+For instance, the age feature might be more relevant to zero-duration calls, while the tariff plan might be more relevant for predicting call duration (young people might be less likely to make calls because of messaging apps, while older people might make longer calls).
+Separate models can provide clearer insights into the different factors affecting zero-duration calls and actual call duration.
+This can be particularly useful for business decisions, such as addressing the causes of zero-duration calls or improving user experience to increase call duration.
 
 ```{r}
 # Histogram of minutes of outgoing calls
@@ -65,6 +145,7 @@ hist(train$y, breaks = 50000, main = "Histogram of minutes of outgoing calls", x
 hist(train$y[train$y > 0], breaks = 50000, main = "Histogram of minutes of outgoing calls for customers with more than 0 minutes", xlab = "Minutes of outgoing calls", xlim = c(0, 1000), col = "#2980b9")
 
 ```
+
 Just for the sake of having a complete view of the data, we also plot the ratio of users with positive duration of calls to the total number of users.
 
 ```{r}
@@ -72,9 +153,10 @@ Just for the sake of having a complete view of the data, we also plot the ratio 
 barplot(table(ifelse(train$y > 0, "Positive duration", "Zero duration")), main = "Number of samples with positive duration vs zero duration of calls", xlab = "Duration of calls", ylab = "Number of samples", col = c("#2980b9", "#e74c3c"))
 ```
 
-
 # Classification
+
 # Todo: how to use rf for classification + confusion matrix results
+
 ```{r}
 rfDf <- train
 # Create a new binary response variable. 1 if the customer has more than 0 minutes of outgoing calls, 0 otherwise
@@ -116,7 +198,6 @@ cat("Specificity: ", rfFit.specificity, "\n")
 
 ```
 
-
 ```{r}
 posDf <- train[train$y > 0, ]
 posDf$y_binary <- NULL
@@ -135,15 +216,24 @@ correlationMatrixY <- correlationMatrixY[order(abs(correlationMatrixY), decreasi
 barplot(correlationMatrixY, las = 2, cex.names = 0.7, main = "Correlation of features with y")
 ```
 
-
 # Regression
-For the regression we utilized a Multivariate Adaptive Regression Splines (MARS) model to predict the duration of outgoing calls using our dataset. Initially, we prepared the training dataset by removing the binary response variable, y_binary. Data from the last two months (q09 and q08), along with other relevant features and the target variable y, were combined into a new dataframe, marsDfLastTwoMonths.
 
-We then trained the MARS model using the train function from the caret package, with the target variable transformed using log(y+1) to handle skewness. The "gcvEarth" method, which stands for Generalized Cross-Validation for Earth models (MARS), was employed. Subsequently, we conducted a grid search over the degrees of interaction (from 1 to 5) to find the optimal model, where interaction degree refers to the complexity of the interactions between variables considered by the model.
+For the regression we utilized a Multivariate Adaptive Regression Splines (MARS) model to predict the duration of outgoing calls using our dataset.
+Initially, we prepared the training dataset by removing the binary response variable, y_binary.
+Data from the last two months (q09 and q08), along with other relevant features and the target variable y, were combined into a new dataframe, marsDfLastTwoMonths.
 
-The summary of the trained MARS model was printed, and the model was visualized using a plot to show the relationship between the interaction degree and the Root Mean Square Error (RMSE) during cross-validation. The console output displayed the coefficients of the MARS model, indicating which terms and interactions between terms were included in the final model. Our model selected 33 out of 43 possible terms and 10 out of 23 predictors. Significant predictors included "q09.out.ch.peak," "tariff.plan8," "tariff.plan7," "q09.out.val.peak," and "age."
+We then trained the MARS model using the train function from the caret package, with the target variable transformed using log(y+1) to handle skewness.
+The "gcvEarth" method, which stands for Generalized Cross-Validation for Earth models (MARS), was employed.
+Subsequently, we conducted a grid search over the degrees of interaction (from 1 to 5) to find the optimal model, where interaction degree refers to the complexity of the interactions between variables considered by the model.
 
-The goodness of fit was indicated by the Generalized Cross-Validation (GCV) score, Residual Sum of Squares (RSS), and R-squared values, suggesting a moderate fit (GCV: 4.678, RSS: 46027.67, GRSq: 0.567, RSq: 0.574). The plot illustrated the RMSE against the degrees of interaction, indicating that the RMSE decreases significantly up to an interaction degree of 3, after which it stabilizes. This suggests that adding more complexity beyond three-way interactions does not substantially improve model performance.
+The summary of the trained MARS model was printed, and the model was visualized using a plot to show the relationship between the interaction degree and the Root Mean Square Error (RMSE) during cross-validation.
+The console output displayed the coefficients of the MARS model, indicating which terms and interactions between terms were included in the final model.
+Our model selected 33 out of 43 possible terms and 10 out of 23 predictors.
+Significant predictors included "q09.out.ch.peak," "tariff.plan8," "tariff.plan7," "q09.out.val.peak," and "age."
+
+The goodness of fit was indicated by the Generalized Cross-Validation (GCV) score, Residual Sum of Squares (RSS), and R-squared values, suggesting a moderate fit (GCV: 4.678, RSS: 46027.67, GRSq: 0.567, RSq: 0.574).
+The plot illustrated the RMSE against the degrees of interaction, indicating that the RMSE decreases significantly up to an interaction degree of 3, after which it stabilizes.
+This suggests that adding more complexity beyond three-way interactions does not substantially improve model performance.
 
 ```{r}
 # Create a new data frame with all 
@@ -166,9 +256,16 @@ best_mars_model <- mars_model$finalModel
 ```
 
 # Model combination
-The final model combines the classification model and the regression model. We have created a function that accepts the test set, the classification model, and the regression model as input and returns the predicted values. The function first predicts the binary outcome using the random forest model. If the predicted outcome is non-zero, the function applies the regression model to predict the duration of calls. To make this function faster, we first predict the binary outcome for the entire test set and then apply the regression model only to the rows with positive outcomes. The other alternative was to apply the two models to each row of the test set, but this was much slower due to the way predict() works in R.
 
-The threshold for the binary outcome is set to 0.25. This threshold was chosen based on the confusion matrix of the random forest model and it is set this low because it is better to have false positives that can still be predicted by the regression model than false negatives that will not be predicted by the regression model and will be set to zero.
+The final model combines the classification model and the regression model.
+We have created a function that accepts the test set, the classification model, and the regression model as input and returns the predicted values.
+The function first predicts the binary outcome using the random forest model.
+If the predicted outcome is non-zero, the function applies the regression model to predict the duration of calls.
+To make this function faster, we first predict the binary outcome for the entire test set and then apply the regression model only to the rows with positive outcomes.
+The other alternative was to apply the two models to each row of the test set, but this was much slower due to the way predict() works in R.
+
+The threshold for the binary outcome is set to 0.25.
+This threshold was chosen based on the confusion matrix of the random forest model and it is set this low because it is better to have false positives that can still be predicted by the regression model than false negatives that will not be predicted by the regression model and will be set to zero.
 
 After returning the predicted values, the script writes the results to a file.
 
@@ -201,5 +298,3 @@ write.table(file="mySubmission.txt", pmax(0, yhat), row.names = FALSE, col.names
 ```
 
 # Conclusions
-
-

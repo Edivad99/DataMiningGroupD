@@ -117,7 +117,19 @@ The data shows some customers have zero traffic in certain months, indicating pe
 
 # Feature selection
 
-## Todo: using only the data from the last two months
+The first thought that came to our heads is that nine months is too much data. Also data about sms and customer service calls seemed redundant. To prove that, let's check the correlation matrices with the most promissing (logically) features: the duration of calls during peak time and off peak:
+
+```{r}
+matching_cols <- grep("^q0[1-9]\\.out\\.dur\\.peak$", names(train), value = TRUE)
+train_out_peak <- train[, matching_cols]
+corrplot(cor(train_out_peak))
+matching_cols <- grep("^q0[1-9]\\.out\\.dur\\.offpeak$", names(train), value = TRUE)
+train_out_offpeak <- train[, matching_cols]
+corrplot(cor(train_out_peak))
+```
+
+As we can see, the correlation between different months is very high, because they are telling the same story :) which means that we can use only the last month data to predict the duration of calls in the tenth month. This will reduce the number of features and make the model more interpretable.
+
 
 # Two-step model: classification and regression
 

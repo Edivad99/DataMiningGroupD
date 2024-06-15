@@ -310,3 +310,9 @@ write.table(file="mySubmission.txt", pmax(0, yhat), row.names = FALSE, col.names
 ```
 
 # Conclusions
+The data set and the problem turned out to be pretty complex and required a deep analysis. During the exploration of the data we discovered that:
+1) Many users did not make any outgoing calls in the tenth month.
+2) The data from different months is highly correlated.
+3) Many features from months data are redundant and can be removed.
+
+The first observation led us to the idea of creating a two-step model: classification and regression. The classification model predicts if the user has a positive duration of calls and the regression model predicts the duration of calls for the users that have a positive duration of calls. This approach showed better results than any single model.

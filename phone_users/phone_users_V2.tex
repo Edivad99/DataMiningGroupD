@@ -1,0 +1,607 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={PhoneUsers},
+  pdfauthor={Group D},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{PhoneUsers}
+\author{Group D}
+\date{2024-04-10}
+
+\begin{document}
+\maketitle
+
+\hypertarget{initial-analysis-of-the-dataset}{%
+\section{Initial analysis of the
+dataset}\label{initial-analysis-of-the-dataset}}
+
+The dataset consists of 10,000 entries and 99 variables, capturing
+various characteristics and behaviors of customers over 9 months. Here's
+a summary of the key points derived from the initial exploration of the
+dataset:
+
+\hypertarget{data-quality}{%
+\subsection{Data Quality:}\label{data-quality}}
+
+\textbf{Missing Values:} There are no missing values in the dataset.
+
+\textbf{Outliers:} The dataset contains some outliers, particularly in
+traffic-related variables, which could impact model performance if not
+addressed.
+
+\textbf{Categorical Variables:} Many variables are categorical and may
+require encoding.They have been converted to Factors for reassurance
+after loading the dataset.
+
+\hypertarget{customer-demographics-and-characteristics-categorical-variables}{%
+\subsection{Customer Demographics and Characteristics (Categorical
+Variables):}\label{customer-demographics-and-characteristics-categorical-variables}}
+
+\textbf{tariff.plan:} Categorical variable with 5 levels indicating
+different customer tariff plans.
+
+\textbf{payment.method:} Categorical variable with 3 levels (Postal
+Order, Credit Card, Direct Debit).
+
+\textbf{sex:} Categorical variable with 3 levels (Male, Female,
+Company).
+
+\textbf{age:} Continuous variable representing the age of the customers.
+
+\textbf{activation.zone:} Categorical variable with 4 levels
+representing geographical zones.
+
+\textbf{activation.channel:} Categorical variable with 8 levels
+indicating the channel through which customers activated their services.
+
+\textbf{vas1}, \textbf{vas2:} Binary variables indicating the presence
+of value-added services.
+
+\hypertarget{traffic-data-over-9-months}{%
+\subsection{Traffic Data Over 9
+Months:}\label{traffic-data-over-9-months}}
+
+For each month (q01 to q9), the dataset includes variables for:
+
+\textbf{qnn.out.ch.peak:} Total monthly number of outgoing calls at peak
+tariff times.
+
+\textbf{qnn.out.dur.peak:} Duration of total monthly outgoing calls at
+peak tariff times.
+
+\textbf{qnn.out.val.peak:} Total monthly outgoing call value at peak
+tariff times.
+
+\textbf{qnn.out.ch.offpeak:} Total monthly number of outgoing calls at
+off-peak tariff times.
+
+\textbf{qnn.out.dur.offpeak:} Duration of total monthly outgoing calls
+at off-peak tariff times.
+
+\textbf{qnn.out.val.offpeak:} Total monthly outgoing call value at
+off-peak tariff times.
+
+\textbf{qnn.in.ch.tot:} Total monthly number of incoming calls.
+
+\textbf{qnn.in.dur.tot:} Duration of total monthly incoming calls.
+
+\textbf{qnn.ch.sms:} Total monthly number of SMS sent.
+
+\textbf{qnn.ch.cc:} Number of monthly calls to customer services.
+
+\hypertarget{initial-observations}{%
+\subsection{Initial Observations:}\label{initial-observations}}
+
+\textbf{Age Distribution:} The age of customers varies widely, with a
+mean of approximately 38.1 years and a standard deviation of 12.6 years.
+
+\textbf{Traffic Patterns:} There are significant variances in call
+duration, call value, and number of calls both at peak and off-peak
+times. The data shows some customers have zero traffic in certain
+months, indicating periods of inactivity.
+
+\textbf{SMS and Customer Service Calls:} The number of SMS sent and
+calls to customer service also show wide variability, with some
+customers having very high engagement in these activities.
+
+\textbf{Deactivation Rates:} The binary deactivation status provides a
+critical outcome variable for predictive modeling, useful for
+understanding customer churn.
+
+\hypertarget{feature-selection}{%
+\section{Feature selection}\label{feature-selection}}
+
+The first thought that came to our heads is that nine months is too much
+data. Also data about sms and customer service calls seemed redundant.
+To prove that, let's check the correlation matrices with the most
+promissing (logically) features: the duration of calls during peak time
+and off peak:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{matching\_cols }\OtherTok{\textless{}{-}} \FunctionTok{grep}\NormalTok{(}\StringTok{"\^{}q0[1{-}9]}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{.out}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{.dur}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{.peak$"}\NormalTok{, }\FunctionTok{names}\NormalTok{(train), }\AttributeTok{value =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{train\_out\_peak }\OtherTok{\textless{}{-}}\NormalTok{ train[, matching\_cols]}
+\FunctionTok{corrplot}\NormalTok{(}\FunctionTok{cor}\NormalTok{(train\_out\_peak))}
+\NormalTok{matching\_cols }\OtherTok{\textless{}{-}} \FunctionTok{grep}\NormalTok{(}\StringTok{"\^{}q0[1{-}9]}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{.out}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{.dur}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{.offpeak$"}\NormalTok{, }\FunctionTok{names}\NormalTok{(train), }\AttributeTok{value =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{train\_out\_offpeak }\OtherTok{\textless{}{-}}\NormalTok{ train[, matching\_cols]}
+\FunctionTok{corrplot}\NormalTok{(}\FunctionTok{cor}\NormalTok{(train\_out\_peak))}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{phone_users_V2_files/figure-latex/unnamed-chunk-3-1.pdf}
+
+As we can see, the correlation between different months is very high,
+because they are telling the same story :) which means that we can use
+only the last month data to predict the duration of calls in the tenth
+month. This will reduce the number of features and make the model more
+interpretable.
+
+\hypertarget{two-step-model-classification-and-regression}{%
+\section{Two-step model: classification and
+regression}\label{two-step-model-classification-and-regression}}
+
+By analyzing the training data set, it is possible to see that many of
+the values of total monthly duration (in seconds) of outgoing calls in
+the response are zero. This means that many users did not make any
+outgoing calls in the predicted month and so it my be unnecessary to
+predict the duration of calls for these users. Therefore, we propose a
+two-step model to predict the response. The first step is a
+classification model that predicts if the user has a positive duration
+of calls and the second step is a regression model that predicts the
+duration of calls for the users that have a positive duration of calls.
+
+In the following histogram, we can see that the distribution of the
+response variable is highly skewed to the left This is because many
+users did not make any outgoing calls in the tenth month. It is so
+skewed that it is hard to see the real distribution of call duration. In
+the second histogram, by removing the users with zero duration of calls,
+we can see the real distribution of call duration. The plots are limited
+to 1000 minutes of calls for better visualization.
+
+By having two models we can have more control over the learning process.
+The features that influence whether a call has zero duration may differ
+from those that influence the length of a call. For instance, the age
+feature might be more relevant to zero-duration calls, while the tariff
+plan might be more relevant for predicting call duration (young people
+might be less likely to make calls because of messaging apps, while
+older people might make longer calls). Separate models can provide
+clearer insights into the different factors affecting zero-duration
+calls and actual call duration. This can be particularly useful for
+business decisions, such as addressing the causes of zero-duration calls
+or improving user experience to increase call duration.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Histogram of minutes of outgoing calls}
+\FunctionTok{hist}\NormalTok{(train}\SpecialCharTok{$}\NormalTok{y, }\AttributeTok{breaks =} \DecValTok{50000}\NormalTok{, }\AttributeTok{main =} \StringTok{"Histogram of minutes of outgoing calls"}\NormalTok{, }\AttributeTok{xlab =} \StringTok{"Minutes of outgoing calls"}\NormalTok{, }\AttributeTok{xlim =} \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{1000}\NormalTok{), }\AttributeTok{col =} \StringTok{"\#2980b9"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{phone_users_V2_files/figure-latex/unnamed-chunk-4-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Histogram of minutes of outgoing calls for customers with more than 0 minutes}
+\FunctionTok{hist}\NormalTok{(train}\SpecialCharTok{$}\NormalTok{y[train}\SpecialCharTok{$}\NormalTok{y }\SpecialCharTok{\textgreater{}} \DecValTok{0}\NormalTok{], }\AttributeTok{breaks =} \DecValTok{50000}\NormalTok{, }\AttributeTok{main =} \StringTok{"Histogram of minutes of outgoing calls for customers with more than 0 minutes"}\NormalTok{, }\AttributeTok{xlab =} \StringTok{"Minutes of outgoing calls"}\NormalTok{, }\AttributeTok{xlim =} \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{1000}\NormalTok{), }\AttributeTok{col =} \StringTok{"\#2980b9"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{phone_users_V2_files/figure-latex/unnamed-chunk-4-2.pdf}
+
+Just for the sake of having a complete view of the data, we also plot
+the ratio of users with positive duration of calls to the total number
+of users.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Plot the number of users with positive duration of calls and number of users with zero duration of calls}
+\FunctionTok{barplot}\NormalTok{(}\FunctionTok{table}\NormalTok{(}\FunctionTok{ifelse}\NormalTok{(train}\SpecialCharTok{$}\NormalTok{y }\SpecialCharTok{\textgreater{}} \DecValTok{0}\NormalTok{, }\StringTok{"Positive duration"}\NormalTok{, }\StringTok{"Zero duration"}\NormalTok{)), }\AttributeTok{main =} \StringTok{"Number of samples with positive duration vs zero duration of calls"}\NormalTok{, }\AttributeTok{xlab =} \StringTok{"Duration of calls"}\NormalTok{, }\AttributeTok{ylab =} \StringTok{"Number of samples"}\NormalTok{, }\AttributeTok{col =} \FunctionTok{c}\NormalTok{(}\StringTok{"\#2980b9"}\NormalTok{, }\StringTok{"\#e74c3c"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{phone_users_V2_files/figure-latex/unnamed-chunk-5-1.pdf}
+
+\hypertarget{classification}{%
+\section{Classification}\label{classification}}
+
+\hypertarget{todo-how-to-use-rf-for-classification-confusion-matrix-results}{%
+\section{Todo: how to use rf for classification + confusion matrix
+results}\label{todo-how-to-use-rf-for-classification-confusion-matrix-results}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{rfDf }\OtherTok{\textless{}{-}}\NormalTok{ train}
+\CommentTok{\# Create a new binary response variable. 1 if the customer has more than 0 minutes of outgoing calls, 0 otherwise}
+\NormalTok{rfDf}\SpecialCharTok{$}\NormalTok{y\_binary }\OtherTok{\textless{}{-}} \FunctionTok{factor}\NormalTok{(}\FunctionTok{ifelse}\NormalTok{(train}\SpecialCharTok{$}\NormalTok{y }\SpecialCharTok{\textgreater{}} \DecValTok{0}\NormalTok{, }\DecValTok{1}\NormalTok{, }\DecValTok{0}\NormalTok{), }\AttributeTok{levels =} \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{1}\NormalTok{))}
+\CommentTok{\# Remove y to avoid using it as a predictor}
+\NormalTok{rfDf}\SpecialCharTok{$}\NormalTok{y }\OtherTok{\textless{}{-}} \ConstantTok{NULL}
+
+\CommentTok{\# Create a new data frame with the last three months of data (feature starting with q09, q08, q07)}
+
+\NormalTok{rfDfLastTwoMonths }\OtherTok{\textless{}{-}}\NormalTok{ rfDf[, }\FunctionTok{c}\NormalTok{(q09, q08, other, }\StringTok{"y\_binary"}\NormalTok{)]}
+
+\CommentTok{\# Fit a random forest model}
+\NormalTok{rfFit }\OtherTok{\textless{}{-}}\NormalTok{ caret}\SpecialCharTok{::}\FunctionTok{train}\NormalTok{(y\_binary }\SpecialCharTok{\textasciitilde{}}\NormalTok{ ., }\AttributeTok{data =}\NormalTok{ rfDfLastTwoMonths, }\AttributeTok{method =} \StringTok{"rf"}\NormalTok{, }\AttributeTok{trControl =} \FunctionTok{trainControl}\NormalTok{(}\AttributeTok{method =} \StringTok{"cv"}\NormalTok{, }\AttributeTok{number =} \DecValTok{10}\NormalTok{), }\AttributeTok{preProcess =} \FunctionTok{c}\NormalTok{(}\StringTok{"center"}\NormalTok{, }\StringTok{"scale"}\NormalTok{), }\AttributeTok{mttry =} \DecValTok{30}\NormalTok{)}
+
+\CommentTok{\# Confusion matrix}
+\NormalTok{confusionMatrix }\OtherTok{\textless{}{-}}\NormalTok{ caret}\SpecialCharTok{::}\FunctionTok{confusionMatrix}\NormalTok{(rfFit)}
+\NormalTok{confusionMatrix}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Cross-Validated (10 fold) Confusion Matrix 
+## 
+## (entries are percentual average cell counts across resamples)
+##  
+##           Reference
+## Prediction    0    1
+##          0 22.7  5.3
+##          1 10.6 61.4
+##                             
+##  Accuracy (average) : 0.8413
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{rfFit.tp }\OtherTok{\textless{}{-}}\NormalTok{ confusionMatrix}\SpecialCharTok{$}\NormalTok{table[}\DecValTok{2}\NormalTok{, }\DecValTok{2}\NormalTok{] }\CommentTok{\# True positive: the number of positive instances correctly classified}
+\NormalTok{rfFit.tn }\OtherTok{\textless{}{-}}\NormalTok{ confusionMatrix}\SpecialCharTok{$}\NormalTok{table[}\DecValTok{1}\NormalTok{, }\DecValTok{1}\NormalTok{] }\CommentTok{\# True negative: the number of negative instances correctly classified}
+\NormalTok{rfFit.fp }\OtherTok{\textless{}{-}}\NormalTok{ confusionMatrix}\SpecialCharTok{$}\NormalTok{table[}\DecValTok{1}\NormalTok{, }\DecValTok{2}\NormalTok{] }\CommentTok{\# False positive: the number of negative instances incorrectly classified as positive}
+\NormalTok{rfFit.fn }\OtherTok{\textless{}{-}}\NormalTok{ confusionMatrix}\SpecialCharTok{$}\NormalTok{table[}\DecValTok{2}\NormalTok{, }\DecValTok{1}\NormalTok{] }\CommentTok{\# False negative: the number of positive instances incorrectly classified as negative}
+
+\CommentTok{\# Accuracy: the proportion of true results (both true positives and true negatives) among the total number of cases examined.}
+\NormalTok{rfFit.accuracy }\OtherTok{\textless{}{-}}\NormalTok{ (rfFit.tp }\SpecialCharTok{+}\NormalTok{ rfFit.tn) }\SpecialCharTok{/}\NormalTok{ (rfFit.tp }\SpecialCharTok{+}\NormalTok{ rfFit.tn }\SpecialCharTok{+}\NormalTok{ rfFit.fp }\SpecialCharTok{+}\NormalTok{ rfFit.fn)}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Accuracy: "}\NormalTok{, rfFit.accuracy, }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Accuracy:  0.8413
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Precision: the proportion of true positive results among the positive predictions.}
+\NormalTok{rfFit.precision }\OtherTok{\textless{}{-}}\NormalTok{ rfFit.tp }\SpecialCharTok{/}\NormalTok{ (rfFit.tp }\SpecialCharTok{+}\NormalTok{ rfFit.fp)}
+\NormalTok{rfFit.precision}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.9207134
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Recall (Sensitivity): the proportion of actual positives correctly identified by the classifier.}
+\NormalTok{rfFit.recall }\OtherTok{\textless{}{-}}\NormalTok{ rfFit.tp }\SpecialCharTok{/}\NormalTok{ (rfFit.tp }\SpecialCharTok{+}\NormalTok{ rfFit.fn)}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Recall: "}\NormalTok{, rfFit.recall, }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Recall:  0.853076
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Specificity: the proportion of actual negatives correctly identified by the classifier.}
+\NormalTok{rfFit.specificity }\OtherTok{\textless{}{-}}\NormalTok{ rfFit.tn }\SpecialCharTok{/}\NormalTok{ (rfFit.tn }\SpecialCharTok{+}\NormalTok{ rfFit.fp)}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Specificity: "}\NormalTok{, rfFit.specificity, }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Specificity:  0.8110039
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{posDf }\OtherTok{\textless{}{-}}\NormalTok{ train[train}\SpecialCharTok{$}\NormalTok{y }\SpecialCharTok{\textgreater{}} \DecValTok{0}\NormalTok{, ]}
+\NormalTok{posDf}\SpecialCharTok{$}\NormalTok{y\_binary }\OtherTok{\textless{}{-}} \ConstantTok{NULL}
+
+\NormalTok{posDf}\SpecialCharTok{$}\NormalTok{tariff.plan }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(posDf}\SpecialCharTok{$}\NormalTok{tariff.plan)}
+\NormalTok{posDf}\SpecialCharTok{$}\NormalTok{activation.channel }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(posDf}\SpecialCharTok{$}\NormalTok{activation.channel)}
+\NormalTok{posDf}\SpecialCharTok{$}\NormalTok{activation.zone }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(posDf}\SpecialCharTok{$}\NormalTok{activation.zone)}
+\NormalTok{posDf}\SpecialCharTok{$}\NormalTok{payment.method }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(posDf}\SpecialCharTok{$}\NormalTok{payment.method)}
+\NormalTok{posDf}\SpecialCharTok{$}\NormalTok{sex }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(posDf}\SpecialCharTok{$}\NormalTok{sex)}
+\NormalTok{posDf}\SpecialCharTok{$}\NormalTok{vas1 }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(posDf}\SpecialCharTok{$}\NormalTok{vas1)}
+\NormalTok{posDf}\SpecialCharTok{$}\NormalTok{vas2 }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(posDf}\SpecialCharTok{$}\NormalTok{vas2)}
+
+\NormalTok{correlationMatrix }\OtherTok{\textless{}{-}} \FunctionTok{cor}\NormalTok{(posDf)}
+\NormalTok{correlationMatrixY }\OtherTok{\textless{}{-}}\NormalTok{ correlationMatrix[}\StringTok{"y"}\NormalTok{, ]}
+\NormalTok{correlationMatrixY }\OtherTok{\textless{}{-}}\NormalTok{ correlationMatrixY[}\FunctionTok{order}\NormalTok{(}\FunctionTok{abs}\NormalTok{(correlationMatrixY), }\AttributeTok{decreasing =} \ConstantTok{TRUE}\NormalTok{)]}
+\FunctionTok{barplot}\NormalTok{(correlationMatrixY, }\AttributeTok{las =} \DecValTok{2}\NormalTok{, }\AttributeTok{cex.names =} \FloatTok{0.7}\NormalTok{, }\AttributeTok{main =} \StringTok{"Correlation of features with y"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{phone_users_V2_files/figure-latex/unnamed-chunk-7-1.pdf}
+
+\hypertarget{regression}{%
+\section{Regression}\label{regression}}
+
+For the regression we utilized a Multivariate Adaptive Regression
+Splines (MARS) model to predict the duration of outgoing calls using our
+dataset. Initially, we prepared the training dataset by removing the
+binary response variable, y\_binary. Data from the last two months (q09
+and q08), along with other relevant features and the target variable y,
+were combined into a new dataframe, marsDfLastTwoMonths.
+
+We then trained the MARS model using the train function from the caret
+package, with the target variable transformed using log(y+1) to handle
+skewness. The ``gcvEarth'' method, which stands for Generalized
+Cross-Validation for Earth models (MARS), was employed. Subsequently, we
+conducted a grid search over the degrees of interaction (from 1 to 5) to
+find the optimal model, where interaction degree refers to the
+complexity of the interactions between variables considered by the
+model.
+
+The summary of the trained MARS model was printed, and the model was
+visualized using a plot to show the relationship between the interaction
+degree and the Root Mean Square Error (RMSE) during cross-validation.
+The console output displayed the coefficients of the MARS model,
+indicating which terms and interactions between terms were included in
+the final model. Our model selected 33 out of 43 possible terms and 10
+out of 23 predictors. Significant predictors included
+``q09.out.ch.peak,'' ``tariff.plan8,'' ``tariff.plan7,''
+``q09.out.val.peak,'' and ``age.''
+
+The goodness of fit was indicated by the Generalized Cross-Validation
+(GCV) score, Residual Sum of Squares (RSS), and R-squared values,
+suggesting a moderate fit (GCV: 4.678, RSS: 46027.67, GRSq: 0.567, RSq:
+0.574). The plot illustrated the RMSE against the degrees of
+interaction, indicating that the RMSE decreases significantly up to an
+interaction degree of 3, after which it stabilizes. This suggests that
+adding more complexity beyond three-way interactions does not
+substantially improve model performance.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Create a new data frame with all }
+\CommentTok{\#marsDf \textless{}{-} train[train$y \textgreater{} 0, ]}
+\NormalTok{marsDf }\OtherTok{\textless{}{-}}\NormalTok{ train}
+\NormalTok{marsDf}\SpecialCharTok{$}\NormalTok{y\_binary }\OtherTok{\textless{}{-}} \ConstantTok{NULL}
+
+\NormalTok{marsDfLastTwoMonths }\OtherTok{\textless{}{-}}\NormalTok{ marsDf[, }\FunctionTok{c}\NormalTok{(q09, q08, other, }\StringTok{"y"}\NormalTok{)]}
+
+\CommentTok{\# Train a MARS model with bagEarthGCV using Caret}
+\CommentTok{\# Grid search for the best degree}
+\NormalTok{mars\_model }\OtherTok{\textless{}{-}}\NormalTok{ caret}\SpecialCharTok{::}\FunctionTok{train}\NormalTok{(}\FunctionTok{log}\NormalTok{(y}\SpecialCharTok{+}\DecValTok{1}\NormalTok{) }\SpecialCharTok{\textasciitilde{}}\NormalTok{ ., }\AttributeTok{data =}\NormalTok{ marsDfLastTwoMonths, }\AttributeTok{method =} \StringTok{"gcvEarth"}\NormalTok{, }\AttributeTok{trControl =} \FunctionTok{trainControl}\NormalTok{(}\AttributeTok{method =} \StringTok{"cv"}\NormalTok{, }\AttributeTok{number =} \DecValTok{10}\NormalTok{), }\AttributeTok{tuneGrid =} \FunctionTok{data.frame}\NormalTok{(}\AttributeTok{degree =} \DecValTok{1}\SpecialCharTok{:}\DecValTok{5}\NormalTok{), }\AttributeTok{preProcess =} \FunctionTok{c}\NormalTok{(}\StringTok{"center"}\NormalTok{, }\StringTok{"scale"}\NormalTok{))}
+
+\FunctionTok{summary}\NormalTok{(mars\_model)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Call: earth(x=matrix[10000,23], y=c(5.537,4.489,8...), keepxy=TRUE, degree=3)
+## 
+##                                                                                                coefficients
+## (Intercept)                                                                                          6.2838
+## tariff.plan7                                                                                        -0.6958
+## tariff.plan8                                                                                        -1.0463
+## h(-0.168236-q09.in.ch.tot)                                                                          -1.0296
+## h(q09.in.ch.tot- -0.168236)                                                                          0.0837
+## h(0.763352-q09.out.val.peak)                                                                        -1.8694
+## h(q09.out.val.peak-0.763352)                                                                         0.2827
+## h(-0.365593-q09.out.ch.peak)                                                                        -7.5262
+## h(-1.23128-age)                                                                                     16.4431
+## h(age- -1.23128)                                                                                     0.3593
+## h(0.763352-q09.out.val.peak) * vas1Y                                                                 0.1556
+## h(-0.638235-q09.out.ch.peak) * tariff.plan7                                                          6.9744
+## h(q09.out.ch.peak- -0.638235) * tariff.plan7                                                         0.2968
+## h(-0.704733-q09.out.ch.peak) * tariff.plan8                                                         41.3529
+## h(q09.out.ch.peak- -0.704733) * tariff.plan8                                                         0.3669
+## h(age-0.186106) * tariff.plan7                                                                      -0.5297
+## h(age-0.171932) * tariff.plan8                                                                      -0.7903
+## h(-0.653102-q09.out.val.peak) * h(-0.365593-q09.out.ch.peak)                                     -3839.7110
+## h(q09.out.val.peak-0.763352) * h(1.37666-q09.out.ch.peak)                                           -0.6838
+## h(0.763352-q09.out.val.peak) * h(q08.out.ch.peak-0.784208)                                          -0.8960
+## h(0.763352-q09.out.val.peak) * h(0.784208-q08.out.ch.peak)                                           0.2329
+## h(-0.153236-q09.out.val.peak) * h(age- -1.23128)                                                    -3.8501
+## h(0.763352-q09.out.val.peak) * h(-0.623827-age)                                                      0.5299
+## h(-0.185051-q09.out.dur.peak) * h(age- -1.23128)                                                     3.4870
+## h(-0.365593-q09.out.ch.peak) * h(age- -1.33151)                                                      2.8143
+## h(-0.365593-q09.out.ch.peak) * h(-1.33151-age)                                                    -236.8059
+## h(-0.653655-q08.out.ch.peak) * h(age-0.171932) * tariff.plan8                                       32.0126
+## h(q08.out.ch.peak- -0.653655) * h(age-0.171932) * tariff.plan8                                       0.1701
+## h(q09.out.val.peak- -0.653102) * h(-0.365593-q09.out.ch.peak) * h(q08.out.val.peak- -0.451654)     -10.8717
+## h(-0.653102-q09.out.val.peak) * h(-0.365593-q09.out.ch.peak) * h(age- -0.952862)                 -9392.7385
+## h(-0.653102-q09.out.val.peak) * h(-0.365593-q09.out.ch.peak) * h(-0.952862-age)                   9114.5693
+## h(-0.653102-q09.out.val.peak) * h(-0.365593-q09.out.ch.peak) * h(age- -1.35479)                   9288.5054
+## h(q09.out.val.peak- -0.653102) * h(-0.365593-q09.out.ch.peak) * h(-1.2414-age)                     803.2111
+## 
+## Selected 33 of 43 terms, and 10 of 23 predictors
+## Termination condition: Reached nk 47
+## Importance: q09.out.ch.peak, tariff.plan8, tariff.plan7, q09.out.val.peak, ...
+## Number of terms at each degree of interaction: 1 9 16 7
+## GCV 4.678248    RSS 46027.67    GRSq 0.5670951    RSq 0.5739946
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Visualize the MARS model}
+\FunctionTok{plot}\NormalTok{(mars\_model)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{phone_users_V2_files/figure-latex/unnamed-chunk-8-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Get the best model}
+\NormalTok{best\_mars\_model }\OtherTok{\textless{}{-}}\NormalTok{ mars\_model}\SpecialCharTok{$}\NormalTok{finalModel}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{model-combination}{%
+\section{Model combination}\label{model-combination}}
+
+The final model combines the classification model and the regression
+model. We have created a function that accepts the test set, the
+classification model, and the regression model as input and returns the
+predicted values. The function first predicts the binary outcome using
+the random forest model. If the predicted outcome is non-zero, the
+function applies the regression model to predict the duration of calls.
+To make this function faster, we first predict the binary outcome for
+the entire test set and then apply the regression model only to the rows
+with positive outcomes. The other alternative was to apply the two
+models to each row of the test set, but this was much slower due to the
+way predict() works in R.
+
+The threshold for the binary outcome is set to 0.25. This threshold was
+chosen based on the confusion matrix of the random forest model and it
+is set this low because it is better to have false positives that can
+still be predicted by the regression model than false negatives that
+will not be predicted by the regression model and will be set to zero.
+
+After returning the predicted values, the script writes the results to a
+file.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{combinedModel }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(test, classModel, regModel) \{}
+  \CommentTok{\# Predict outcomes using the random forest model for the entire test set}
+\NormalTok{  y\_rf }\OtherTok{=} \FunctionTok{predict}\NormalTok{(classModel, }\AttributeTok{newdata =}\NormalTok{ test, }\AttributeTok{type =} \StringTok{"prob"}\NormalTok{)}
+\NormalTok{  tresh }\OtherTok{=} \FloatTok{0.25} 
+\NormalTok{  y\_rf }\OtherTok{=} \FunctionTok{ifelse}\NormalTok{(y\_rf[, }\DecValTok{2}\NormalTok{] }\SpecialCharTok{\textgreater{}}\NormalTok{ tresh, }\DecValTok{1}\NormalTok{, }\DecValTok{0}\NormalTok{)}
+
+  \CommentTok{\# Initialize yhat with zeros}
+\NormalTok{  yhat }\OtherTok{=} \FunctionTok{rep}\NormalTok{(}\DecValTok{0}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(test))}
+  
+  \CommentTok{\# Identify the rows where the prediction outcome is non{-}zero}
+\NormalTok{  non\_zero\_indices }\OtherTok{=} \FunctionTok{which}\NormalTok{(y\_rf }\SpecialCharTok{!=} \DecValTok{0}\NormalTok{)}
+  
+  \CommentTok{\# Apply the regression model only to the rows with non{-}zero outcomes}
+  \ControlFlowTok{if}\NormalTok{(}\FunctionTok{length}\NormalTok{(non\_zero\_indices) }\SpecialCharTok{\textgreater{}} \DecValTok{0}\NormalTok{) \{}
+\NormalTok{    yhat[non\_zero\_indices] }\OtherTok{=} \FunctionTok{exp}\NormalTok{(}\FunctionTok{predict}\NormalTok{(regModel, }\AttributeTok{newdata =}\NormalTok{ test[non\_zero\_indices, ]))}\SpecialCharTok{{-}}\DecValTok{1}
+\NormalTok{  \}}
+  
+  \FunctionTok{return}\NormalTok{(yhat)}
+\NormalTok{\}}
+
+\CommentTok{\# Predict all values of test set}
+\NormalTok{yhat }\OtherTok{\textless{}{-}} \FunctionTok{combinedModel}\NormalTok{(test, rfFit, mars\_model)}
+
+\CommentTok{\# Write the results to a file}
+\FunctionTok{write.table}\NormalTok{(}\AttributeTok{file=}\StringTok{"mySubmission.txt"}\NormalTok{, }\FunctionTok{pmax}\NormalTok{(}\DecValTok{0}\NormalTok{, yhat), }\AttributeTok{row.names =} \ConstantTok{FALSE}\NormalTok{, }\AttributeTok{col.names =} \ConstantTok{FALSE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{conclusions}{%
+\section{Conclusions}\label{conclusions}}
+
+The data set and the problem turned out to be pretty complex and
+required a deep analysis. During the exploration of the data we
+discovered that: 1) Many users did not make any outgoing calls in the
+tenth month. 2) The data from different months is highly correlated. 3)
+Many features from months data are redundant and can be removed.
+
+The first observation led us to the idea of creating a two-step model:
+classification and regression. The classification model predicts if the
+user has a positive duration of calls and the regression model predicts
+the duration of calls for the users that have a positive duration of
+calls. This approach showed better results than any single model.
+
+\end{document}

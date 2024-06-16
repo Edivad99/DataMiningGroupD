@@ -2,9 +2,11 @@
 title: "PhoneUsers"
 author: "Group D"
 date: "2024-04-10"
-output: html_document
-editor_options: 
-  markdown: 
+output:
+  html_document: default
+  pdf_document: default
+editor_options:
+  markdown:
     wrap: sentence
 ---
 
@@ -115,9 +117,36 @@ The data shows some customers have zero traffic in certain months, indicating pe
 
 **Deactivation Rates:** The binary deactivation status provides a critical outcome variable for predictive modeling, useful for understanding customer churn.
 
+### Principal Component Analysis
+Here, PCA is used to identify the most important features in the dataset in order to better understand the data. By default, the prcomp() function, with the option "scale = true", centers and scales the data, so we don't need to do it manually.
+
+This biplot tells us that the variables "*.in.dur.tot", "*.in.ch.tot", "*.out.val.peak", "*.out.dur.peak", "*.out.ch.peak" of the different months are highly correlated, which is expected since they are all related to the same type of activity (calls). Instead, the variables of sex, payment method, activation zone, activation channel and tariff plan are not correlated with the other variables, which is also expected since they aren't strictly related to the call duration. Indeed, VAS1 and VAS2, which refers to the presence of value-added services, show some correlation with the call duration, meaning that those who have these services tend to make more calls.
+
+The biplot clearly explain this by placing the variables related to the call duration along the first principal component and the categorical variables along the second principal component, orthogonal to the first one.
+
+```{r}
+library("ggbiplot")
+# Principal Component Analysis
+pcaTrain <- train[, c(q09, q08, other, "y")]
+pcaTrain$sex <- as.numeric(pcaTrain$sex)
+pcaTrain$payment.method <- as.numeric(pcaTrain$payment.method)
+pcaTrain$activation.zone <- as.numeric(pcaTrain$activation.zone)
+pcaTrain$activation.channel <- as.numeric(pcaTrain$activation.channel)
+pcaTrain$tariff.plan <- as.numeric(pcaTrain$tariff.plan)
+pcaTrain$vas1 <- as.numeric(pcaTrain$vas1)
+pcaTrain$vas2 <- as.numeric(pcaTrain$vas2)
+
+pca <- prcomp(pcaTrain[,1:19], scale = TRUE)
+
+# Biplot with GGplot2
+ggbiplot::ggbiplot(pca, obs.scale = 1, var.scale = 1, groups = pcaTrain$y, circle = TRUE, varname.size = 3, varname.adjust = 3, varname.color = "orange", varname.face = "bold") +
+  theme_minimal() +
+  theme(legend.title = element_text(size = 10), legend.text = element_text(size = 10)) +
+  ggtitle("PCA Biplot")
+```
 # Feature selection
 
-The first thought that came to our heads is that nine months is too much data. Also data about sms and customer service calls seemed redundant. To prove that, let's check the correlation matrices with the most promissing (logically) features: the duration of calls during peak time and off peak:
+The first thought that came to our heads is that nine months is too much data. Also data about SMS and customer service calls seemed redundant. To prove that, let's check the correlation matrices with the most promising (logically) features: the duration of calls during peak time and off peak:
 
 ```{r}
 matching_cols <- grep("^q0[1-9]\\.out\\.dur\\.peak$", names(train), value = TRUE)
@@ -128,7 +157,7 @@ train_out_offpeak <- train[, matching_cols]
 corrplot(cor(train_out_peak))
 ```
 
-As we can see, the correlation between different months is very high, because they are telling the same story :) which means that we can use only the last month data to predict the duration of calls in the tenth month. This will reduce the number of features and make the model more interpretable.
+As we can see, the correlation between different months is very high, because they are telling the same story. This means that we can use only the last month data to predict the duration of calls in the tenth month. This will reduce the number of features and make the model more interpretable.
 
 
 # Two-step model: classification and regression
@@ -310,9 +339,19 @@ write.table(file="mySubmission.txt", pmax(0, yhat), row.names = FALSE, col.names
 ```
 
 # Conclusions
-The data set and the problem turned out to be pretty complex and required a deep analysis. During the exploration of the data we discovered that:
+The data set and the problem turned out to be pretty complex and required a deep analysis to understand the meaning of the features, what features to keep, and what model to use.
+We find out that:
 1) Many users did not make any outgoing calls in the tenth month.
-2) The data from different months is highly correlated.
-3) Many features from months data are redundant and can be removed.
+2) The data from different months is was correlated.
+3) Many features from months data was redundant and can be removed.
 
-The first observation led us to the idea of creating a two-step model: classification and regression. The classification model predicts if the user has a positive duration of calls and the regression model predicts the duration of calls for the users that have a positive duration of calls. This approach showed better results than any single model.
+After deciding to use only the data from the last two months, we decided to use a two-step model: classification and regression. The classification model predicts if the user has a positive duration of calls and the regression model predicts the duration of calls for the users that have a positive duration of calls.
+
+It is possible that more advanced and complex models could have led to better results, but our goal was to apply the content of the course and to provide a simple and interpretable model that we could fully understand and explain. Furthermore, applying a two-step model was a new approach to us that we wanted to explore because it allowed us to have more control over the final model, to applying models for both classification and regression and to avoid choosing a model only based on the final score and without really understanding it. In the end we are happy both with the results and with the knowledge we gained from this project.
+
+
+
+
+
+
+

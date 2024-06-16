@@ -133,8 +133,8 @@ As we can see, the correlation between different months is very high, because th
 
 # Two-step model: classification and regression
 
-By analyzing the training data set, it is possible to see that many of the values of total monthly duration (in seconds) of outgoing calls in the tenth month are zero.
-This means that many users did not make any outgoing calls in the tenth month and so it my be unnecessary to predict the duration of calls for these users.
+By analyzing the training data set, it is possible to see that many of the values of total monthly duration (in seconds) of outgoing calls in the response are zero.
+This means that many users did not make any outgoing calls in the predicted month and so it my be unnecessary to predict the duration of calls for these users.
 Therefore, we propose a two-step model to predict the response.
 The first step is a classification model that predicts if the user has a positive duration of calls and the second step is a regression model that predicts the duration of calls for the users that have a positive duration of calls.
 

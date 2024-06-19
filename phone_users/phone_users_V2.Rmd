@@ -157,7 +157,7 @@ train_out_offpeak <- train[, matching_cols]
 corrplot(cor(train_out_peak))
 ```
 
-As we can see, the correlation between different months is very high, because they are telling the same story. This means that we can use only the last month data to predict the duration of calls in the tenth month. This will reduce the number of features and make the model more interpretable.
+As we can see, the correlation between different months is very high, because they are telling the same story. This means that we can use only the last two months' data to predict the duration of calls in the tenth month. This will reduce the number of features and make the model more interpretable.
 
 
 # Two-step model: classification and regression
@@ -196,9 +196,26 @@ barplot(table(ifelse(train$y > 0, "Positive duration", "Zero duration")), main =
 
 # Classification
 
-# Todo: how to use rf for classification + confusion matrix results
+As we have already seen above, we decided to split the problem in a 2-step approach, in order to have more control on the learning process.
+The first step leads to a binary classification approach, where an object is classified as 1 if it did call for at least one minute, 0 otherwise.
+To do this, we decided to use an ensamble method, taking advantage of the low variance that these models exploit.
+This is achieved because of the fact that we are averaging a set of observations, with a Random Forest.
+With Random Forests we are building a set of decision trees on bootstrapped training samples, but each time a random sample of predictors is considered from the full set of predictors.
+In this way, we are building de-correlated trees that use different features, making the average of the resulting trees less variable, hence the final model is more reliable.
+Random Forests can be really helpful with high dimensional data, and with our 19-dimensional dataset this model gives good results, for what concerns the metrics that we take into account.
+
+An important evaluation is given by sensitivity and specificity, since the distribution of the positive samples (who's made at least one call) is higher than negative samples, ad thus accuracy measure can be biased.
+Another important aspect that specificity is taking into account is the proportion of actual negatives.
+In fact for our purpose the identification of actual positive samples and actual negative samples can lead to accurate evaluations and better results.
+0-minute-calls classified as positive-duration-calls are really different than positive-duration-calls classified as 0-minute-calls, since the final model can predict a duration for false positives near zero, while in the other case for false negatives we are simply deleting observations from our dataset.
+
+We obtained the value for the number of predictors using Grid-Search Cross-Validation; the final model take into account 4 predictors, as we expected since the features of the dataset created from the last two months are correlated each other.
+Sensitivity and Specificity have both values above 80% while for Precision the value is above 90%.
+We can argue that this binary classification model is working good as expected, so we can move fro the last part of our path - the regression model.
+
 
 ```{r}
+set.seed(1234)
 rfDf <- train
 # Create a new binary response variable. 1 if the customer has more than 0 minutes of outgoing calls, 0 otherwise
 rfDf$y_binary <- factor(ifelse(train$y > 0, 1, 0), levels = c(0, 1))
@@ -210,11 +227,21 @@ rfDf$y <- NULL
 rfDfLastTwoMonths <- rfDf[, c(q09, q08, other, "y_binary")]
 
 # Fit a random forest model
-rfFit <- caret::train(y_binary ~ ., data = rfDfLastTwoMonths, method = "rf", trControl = trainControl(method = "cv", number = 10), preProcess = c("center", "scale"), mttry = 30)
+tuneGrid <- expand.grid(.mtry = 2:18)
+rfFit <- caret::train(y_binary ~ .,
+                      data = rfDfLastTwoMonths,
+                      method = "rf",
+                      trControl = trainControl(method = "cv", number = 10),
+                      tuneGrid = tuneGrid,
+                      #mttry = 4,
+                      preProcess = c("center", "scale"))
 
 # Confusion matrix
 confusionMatrix <- caret::confusionMatrix(rfFit)
 confusionMatrix
+
+#best_mtry <- rfFit$bestTune$mtry
+#cat("Best mtry: ", best_mtry, "\n")
 
 rfFit.tp <- confusionMatrix$table[2, 2] # True positive: the number of positive instances correctly classified
 rfFit.tn <- confusionMatrix$table[1, 1] # True negative: the number of negative instances correctly classified
@@ -227,7 +254,7 @@ cat("Accuracy: ", rfFit.accuracy, "\n")
 
 # Precision: the proportion of true positive results among the positive predictions.
 rfFit.precision <- rfFit.tp / (rfFit.tp + rfFit.fp)
-rfFit.precision
+cat("Precision: ", rfFit.precision, "\n")
 
 # Recall (Sensitivity): the proportion of actual positives correctly identified by the classifier.
 rfFit.recall <- rfFit.tp / (rfFit.tp + rfFit.fn)

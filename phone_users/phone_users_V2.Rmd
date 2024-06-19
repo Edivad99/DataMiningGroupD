@@ -215,7 +215,6 @@ We can argue that this binary classification model is working good as expected, 
 
 
 ```{r}
-set.seed(1234)
 rfDf <- train
 # Create a new binary response variable. 1 if the customer has more than 0 minutes of outgoing calls, 0 otherwise
 rfDf$y_binary <- factor(ifelse(train$y > 0, 1, 0), levels = c(0, 1))
